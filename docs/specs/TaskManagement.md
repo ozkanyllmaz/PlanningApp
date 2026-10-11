@@ -22,6 +22,8 @@
 - Her görevin bir `Priority` (TaskPriority: Normal/Important/Critical) değeri
   vardır, oluşturulurken zorunlu parametre olarak verilir (varsayılan değer
   YOK — her görev için bilinçli bir seçim yapılmalı).
+- Her görev bir kullanıcıya aittir (`UserId`, oluşturulurken verilir,
+  değişmez). Bir kullanıcı sadece kendi görevlerini görür ve değiştirir.
 
 ## Henüz Kararlaştırılmadı (TODO)
 - [ ] Undo penceresi: sınırsız mı, süre sınırlı mı (örn. 5 dk)?

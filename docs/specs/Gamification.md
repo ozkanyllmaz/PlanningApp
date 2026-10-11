@@ -5,6 +5,7 @@
 ## Kesinleşen Kurallar
 - `Streak` kullanıcı bazlıdır (`UserId` alanı taşır), MVP'de tek kullanıcı
   olsa bile ileride çok kullanıcılı yapıya hazır tasarlanır.
+- Bir kullanıcının tek bir Streak kaydı olur (Persistence’ta UserId unique index).
 - Bir günün "seriyi devam ettirmesi" **ağırlıklı tamamlanma yüzdesi** ile
   belirlenir, basit (tamamlanan/toplam) oranla DEĞİL:
   - Normal görev = 1 puan, Önemli görev = 2 puan, Kritik görev = 3 puan

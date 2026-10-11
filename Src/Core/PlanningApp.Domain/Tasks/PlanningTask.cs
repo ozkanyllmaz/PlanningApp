@@ -6,6 +6,7 @@ namespace PlanningApp.Domain.Tasks;
 public class PlanningTask
 {
     public Guid Id { get; private set; }
+    public Guid UserId { get; private set; }
     public string Title { get; private set; }
     public TaskPriority Priority { get; private set; }
     public DateOnly? AssignedDate { get; private set; }
@@ -14,9 +15,10 @@ public class PlanningTask
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
 
-    private PlanningTask(Guid id, string title, TaskPriority priority, DateTimeOffset createdAt)
+    private PlanningTask(Guid id, Guid userId, string title, TaskPriority priority, DateTimeOffset createdAt)
     {
         Id = id;
+        UserId = userId;
         Title = title;
         Priority = priority;
         AssignedDate = null;
@@ -26,12 +28,15 @@ public class PlanningTask
         CompletedAt = null;
     }
 
-    public static PlanningTask CreateInPool(Guid id, string title, TaskPriority priority, DateTimeOffset createdAt)
+    public static PlanningTask CreateInPool(Guid id, Guid userId, string title, TaskPriority priority, DateTimeOffset createdAt)
     {
+        if (userId == Guid.Empty)
+            throw new DomainException("Kullanıcı kimliği boş olamaz.");
+
         if (string.IsNullOrWhiteSpace(title))
             throw new DomainException("Görev başlığı boş olamaz.");
 
-        return new PlanningTask(id, title.Trim(), priority, createdAt);
+        return new PlanningTask(id, userId, title.Trim(), priority, createdAt);
     }
 
     public void ChangePriority(TaskPriority newPriority)

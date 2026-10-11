@@ -33,6 +33,12 @@
   kararı (offline oluşturulan bir kayıt için mobil istemciden gelen ID mi,
   yoksa Application katmanının `Guid.NewGuid()` ile ürettiği bir ID mi)
   Application katmanına aittir.
+- **Kullanıcı Sahipliği:** Kullanıcıya ait her entity (`PlanningTask`,
+  `PlanningWeek`, `Streak`) bir `UserId` (Guid) taşır. `UserId` factory
+  metoduna zorunlu parametre olarak verilir, `Guid.Empty` reddedilir ve
+  oluşturulduktan sonra DEĞİŞTİRİLEMEZ (setter veya değiştiren metot yok).
+  Domain "şu anki kullanıcı kim" bilgisini bilmez; sahiplik kontrolü
+  (bu kayıt bu kullanıcıya mı ait) Application katmanının işidir.
 - **Zaman Bağımlılığı (Time Injection):** Entity içindeki hiçbir metot
   `DateTime.Now` veya `DateTimeOffset.UtcNow` gibi sistem saatine DOĞRUDAN
   erişemez — ne okuma (örn. "bugün ne") ne de yazma (örn. bir timestamp

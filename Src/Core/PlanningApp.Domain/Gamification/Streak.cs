@@ -24,7 +24,12 @@ public sealed class Streak
     }
 
     public static Streak Create(Guid id, Guid userId)
-        => new(id, userId);
+    {
+        if (userId == Guid.Empty)
+            throw new DomainException("Kullanıcı kimliği boş olamaz.");
+
+        return new Streak(id, userId);
+    }
 
     public void EvaluateDay(decimal weightedCompletionPercentage, DateOnly date)
     {
