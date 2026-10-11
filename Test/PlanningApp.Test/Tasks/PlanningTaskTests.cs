@@ -17,7 +17,7 @@ public class PlanningTaskTests
         var createdAt = DateTimeOffset.UtcNow;
 
         // Act
-        var task = PlanningTask.CreateInPool(id, "Markette süt al", createdAt);
+        var task = PlanningTask.CreateInPool(id, "Markette süt al", TaskPriority.Normal, createdAt);
 
         // Assert
         task.Id.Should().Be(id);
@@ -39,7 +39,7 @@ public class PlanningTaskTests
         var createdAt = DateTimeOffset.UtcNow;
 
         // Act
-        var act = () => PlanningTask.CreateInPool(id, invalidTitle!, createdAt);
+        var act = () => PlanningTask.CreateInPool(id, invalidTitle!, TaskPriority.Normal, createdAt);
 
         // Assert
         act.Should().Throw<DomainException>()
@@ -50,7 +50,7 @@ public class PlanningTaskTests
     public void CreateInPool_WithSurroundingWhitespace_TrimsTitle()
     {
         // Arrange & Act
-        var task = PlanningTask.CreateInPool(Guid.NewGuid(), "  Spor yap  ", DateTimeOffset.UtcNow);
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), "  Spor yap  ", TaskPriority.Normal, DateTimeOffset.UtcNow);
 
         // Assert
         task.Title.Should().Be("Spor yap");
@@ -302,7 +302,7 @@ public class PlanningTaskTests
     // ---- Test Helpers ----
 
     private static PlanningTask CreateSampleTask()
-        => PlanningTask.CreateInPool(Guid.NewGuid(), "Örnek görev", DateTimeOffset.UtcNow);
+        => PlanningTask.CreateInPool(Guid.NewGuid(), "Örnek görev", TaskPriority.Normal, DateTimeOffset.UtcNow);
 
     private static PlanningTask CreateCompletedTask()
     {
