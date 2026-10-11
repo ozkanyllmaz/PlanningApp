@@ -10,6 +10,9 @@ public class StreakTests
     // Sabit bir başlangıç günü; testlerin sistem saatine bağımlı olmaması için
     private static readonly DateOnly StartDate = new(2026, 1, 5);
 
+    // Sabit bir kullanıcı kimliği; testlerin rastgele değerlere bağımlı olmaması için
+    private static readonly Guid SampleUserId = new("11111111-1111-1111-1111-111111111111");
+
     // ---- Create ----
 
     [Fact]
@@ -29,6 +32,20 @@ public class StreakTests
         streak.LongestStreak.Should().Be(0);
         streak.LastEvaluatedDate.Should().BeNull();
         streak.AvailableFreezes.Should().Be(0);
+    }
+
+    [Fact]
+    public void Create_WithEmptyUserId_ThrowsDomainException()
+    {
+        // Arrange
+        var emptyUserId = Guid.Empty;
+
+        // Act
+        var act = () => Streak.Create(Guid.NewGuid(), emptyUserId);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Kullanıcı kimliği boş olamaz.");
     }
 
     // ---- EvaluateDay: %70 eşiği ----
@@ -237,7 +254,7 @@ public class StreakTests
     // ---- Test Helpers ----
 
     private static Streak CreateSampleStreak()
-        => Streak.Create(Guid.NewGuid(), Guid.NewGuid());
+        => Streak.Create(Guid.NewGuid(), SampleUserId);
 
     // Ardışık günlerde eşiği geçerek CurrentStreak değerini istenen sayıya getirir
     private static Streak CreateStreakWithCurrentValue(int days)

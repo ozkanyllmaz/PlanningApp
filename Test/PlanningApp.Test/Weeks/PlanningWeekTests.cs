@@ -10,6 +10,9 @@ public class PlanningWeekTests
     // Sabit bir Pazartesi (2026-01-05); testlerin sistem saatine bağımlı olmaması için
     private static readonly DateOnly Monday = new(2026, 1, 5);
 
+    // Sabit bir kullanıcı kimliği; testlerin rastgele değerlere bağımlı olmaması için
+    private static readonly Guid SampleUserId = new("11111111-1111-1111-1111-111111111111");
+
     // ---- Create ----
 
     [Fact]
@@ -19,7 +22,7 @@ public class PlanningWeekTests
         var id = Guid.NewGuid();
 
         // Act
-        var week = PlanningWeek.Create(id, Monday);
+        var week = PlanningWeek.Create(id, SampleUserId, Monday);
 
         // Assert
         week.Id.Should().Be(id);
@@ -44,11 +47,38 @@ public class PlanningWeekTests
         var notMonday = Monday.AddDays(daysAfterMonday);
 
         // Act
-        var act = () => PlanningWeek.Create(id, notMonday);
+        var act = () => PlanningWeek.Create(id, SampleUserId, notMonday);
 
         // Assert
         act.Should().Throw<DomainException>()
             .WithMessage("Hafta başlangıcı Pazartesi olmalıdır.");
+    }
+
+    [Fact]
+    public void Create_WithGivenUserId_StoresUserId()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+
+        // Act
+        var week = PlanningWeek.Create(Guid.NewGuid(), userId, Monday);
+
+        // Assert
+        week.UserId.Should().Be(userId);
+    }
+
+    [Fact]
+    public void Create_WithEmptyUserId_ThrowsDomainException()
+    {
+        // Arrange
+        var emptyUserId = Guid.Empty;
+
+        // Act
+        var act = () => PlanningWeek.Create(Guid.NewGuid(), emptyUserId, Monday);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Kullanıcı kimliği boş olamaz.");
     }
 
     // ---- Archive: bitmiş hafta kontrolü ----
@@ -178,7 +208,7 @@ public class PlanningWeekTests
     // ---- Test Helpers ----
 
     private static PlanningWeek CreateSampleWeek()
-        => PlanningWeek.Create(Guid.NewGuid(), Monday);
+        => PlanningWeek.Create(Guid.NewGuid(), SampleUserId, Monday);
 
     // Haftanın bittiği ilk gün (bir sonraki Pazartesi)
     private static DateOnly AfterWeekEnd()

@@ -7,6 +7,9 @@ namespace PlanningApp.Test.Tasks;
 
 public class PlanningTaskTests
 {
+    // Sabit bir kullanıcı kimliği; testlerin rastgele değerlere bağımlı olmaması için
+    private static readonly Guid SampleUserId = new("11111111-1111-1111-1111-111111111111");
+
     // ---- CreateInPool ----
 
     [Fact]
@@ -17,7 +20,7 @@ public class PlanningTaskTests
         var createdAt = DateTimeOffset.UtcNow;
 
         // Act
-        var task = PlanningTask.CreateInPool(id, "Markette süt al", TaskPriority.Normal, createdAt);
+        var task = PlanningTask.CreateInPool(id, SampleUserId, "Markette süt al", TaskPriority.Normal, createdAt);
 
         // Assert
         task.Id.Should().Be(id);
@@ -39,7 +42,7 @@ public class PlanningTaskTests
         var createdAt = DateTimeOffset.UtcNow;
 
         // Act
-        var act = () => PlanningTask.CreateInPool(id, invalidTitle!, TaskPriority.Normal, createdAt);
+        var act = () => PlanningTask.CreateInPool(id, SampleUserId, invalidTitle!, TaskPriority.Normal, createdAt);
 
         // Assert
         act.Should().Throw<DomainException>()
@@ -50,7 +53,7 @@ public class PlanningTaskTests
     public void CreateInPool_WithSurroundingWhitespace_TrimsTitle()
     {
         // Arrange & Act
-        var task = PlanningTask.CreateInPool(Guid.NewGuid(), "  Spor yap  ", TaskPriority.Normal, DateTimeOffset.UtcNow);
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "  Spor yap  ", TaskPriority.Normal, DateTimeOffset.UtcNow);
 
         // Assert
         task.Title.Should().Be("Spor yap");
@@ -63,10 +66,37 @@ public class PlanningTaskTests
         var priority = TaskPriority.Critical;
 
         // Act
-        var task = PlanningTask.CreateInPool(Guid.NewGuid(), "Örnek görev", priority, DateTimeOffset.UtcNow);
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "Örnek görev", priority, DateTimeOffset.UtcNow);
 
         // Assert
         task.Priority.Should().Be(TaskPriority.Critical);
+    }
+
+    [Fact]
+    public void CreateInPool_WithGivenUserId_StoresUserId()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+
+        // Act
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), userId, "Örnek görev", TaskPriority.Normal, DateTimeOffset.UtcNow);
+
+        // Assert
+        task.UserId.Should().Be(userId);
+    }
+
+    [Fact]
+    public void CreateInPool_WithEmptyUserId_ThrowsDomainException()
+    {
+        // Arrange
+        var emptyUserId = Guid.Empty;
+
+        // Act
+        var act = () => PlanningTask.CreateInPool(Guid.NewGuid(), emptyUserId, "Örnek görev", TaskPriority.Normal, DateTimeOffset.UtcNow);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Kullanıcı kimliği boş olamaz.");
     }
 
     // ---- ChangePriority ----
@@ -344,7 +374,7 @@ public class PlanningTaskTests
     // ---- Test Helpers ----
 
     private static PlanningTask CreateSampleTask()
-        => PlanningTask.CreateInPool(Guid.NewGuid(), "Örnek görev", TaskPriority.Normal, DateTimeOffset.UtcNow);
+        => PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "Örnek görev", TaskPriority.Normal, DateTimeOffset.UtcNow);
 
     private static PlanningTask CreateCompletedTask()
     {
