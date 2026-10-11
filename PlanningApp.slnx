@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="CLAUDE.md" />
+  </Folder>
+  <Folder Name="/Src/" />
+  <Folder Name="/Src/Core/">
+    <Project Path="Src/Core/PlanningApp.Application/PlanningApp.Application.csproj" />
+    <Project Path="Src/Core/PlanningApp.Domain/PlanningApp.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Src/External/">
+    <Project Path="Src/External/PlanningApp.Infrastructure/PlanningApp.Infrastructure.csproj" />
+    <Project Path="Src/External/PlanningApp.Persistence/PlanningApp.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/Test/">
+    <Project Path="Test/PlanningApp.Test/PlanningApp.Test.csproj" Id="f7231893-d994-4f03-9e5e-e1f1dd7910fd" />
+  </Folder>
+  <Project Path="PlanningApp.WebApi/PlanningApp.WebApi.csproj" />
+</Solution>
