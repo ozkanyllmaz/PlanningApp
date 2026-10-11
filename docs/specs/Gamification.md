@@ -1,0 +1,47 @@
+# Gamification — Özellik Spesifikasyonu
+
+## Durum: Taslak (Domain tasarımı sürüyor)
+
+## Kesinleşen Kurallar
+- `Streak` kullanıcı bazlıdır (`UserId` alanı taşır), MVP'de tek kullanıcı
+  olsa bile ileride çok kullanıcılı yapıya hazır tasarlanır.
+- Bir günün "seriyi devam ettirmesi" **ağırlıklı tamamlanma yüzdesi** ile
+  belirlenir, basit (tamamlanan/toplam) oranla DEĞİL:
+  - Normal görev = 1 puan, Önemli görev = 2 puan, Kritik görev = 3 puan
+    (bkz. `TaskPriority` enum, Tasks/TaskPriority.cs)
+  - Günün puanı = (tamamlanan görevlerin puan toplamı) / (o güne atanmış
+    tüm görevlerin maksimum puan toplamı)
+  - Bu hesaplama Application katmanında yapılır (Domain'e sadece sonuç
+    yüzdesi parametre olarak girer — bkz. entity_rules.md Time Injection
+    prensibiyle aynı mantık: "hangi günün puanı ne" kararı Domain'in işi
+    değil).
+- Eşik: ağırlıklı yüzde **%70 ve üzeri** ise seri devam eder/artar, altındaysa
+  seri sıfırlanır (freeze hakkı yoksa — aşağıya bkz.).
+- **Seri Dondurma (Freeze) — basitleştirilmiş v1 kapsamı:** `Streak`
+  entity'si bir `AvailableFreezes` (int) sayacı taşır. Eşik tutturulamazsa
+  ve `AvailableFreezes > 0` ise bir freeze harcanır, seri SIFIRLANMAZ ama
+  ARTMAZ DA (olduğu yerde kalır). `AvailableFreezes` nereden kazanılır/satın
+  alınır (elmas ekonomisi, premium üyelik) — bu proje kapsamında HENÜZ
+  TASARLANMADI, bkz. TODO.
+- Günlük değerlendirme idempotent olmalıdır: aynı gün için `EvaluateDay()`
+  iki kez çağrılamaz (örn. Hosted Service yanlışlıkla iki kez tetiklenirse).
+  Bu, `LastEvaluatedDate` alanıyla Domain seviyesinde garanti altına alınır.
+
+## Henüz Kararlaştırılmadı (TODO)
+- [ ] `AvailableFreezes` nasıl kazanılır? (Elmas harcama, Premium üyelik,
+  başka bir ödül mekanizması?) — v2.0 kapsamına ertelendi.
+- [ ] Elmas ekonomisi / Premium üyelik ayrı bir aggregate mi olacak? —
+  v2.0'da ayrıca tasarlanacak, bu dosyaya o zaman bağlanacak.
+- [ ] `%70` eşiği sabit mi kalacak, yoksa ileride kullanıcı tarafından
+  ayarlanabilir mi olacak?
+- [ ] `EvaluateDay()`'i kim, ne zaman tetikler? (Muhtemelen Infrastructure'daki
+  bir Hosted Service, her gün gece yarısı — Infrastructure katmanına
+  geçildiğinde netleştirilecek.)
+
+## İlgili Katmanlar
+- Domain: `Streak` entity (bkz. Gamification/Streak.cs), `TaskPriority` enum
+  (bkz. Tasks/TaskPriority.cs)
+- Application: Günlük ağırlıklı puan hesaplama mantığı (henüz yazılmadı)
+- Persistence: (henüz yok)
+- Infrastructure: Günlük değerlendirmeyi tetikleyen Hosted Service (henüz yok)
+- WebApi: (henüz yok)
