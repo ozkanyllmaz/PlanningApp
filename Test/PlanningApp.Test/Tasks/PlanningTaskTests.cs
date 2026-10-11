@@ -56,6 +56,48 @@ public class PlanningTaskTests
         task.Title.Should().Be("Spor yap");
     }
 
+    [Fact]
+    public void CreateInPool_WithGivenPriority_StoresPriority()
+    {
+        // Arrange
+        var priority = TaskPriority.Critical;
+
+        // Act
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), "Örnek görev", priority, DateTimeOffset.UtcNow);
+
+        // Assert
+        task.Priority.Should().Be(TaskPriority.Critical);
+    }
+
+    // ---- ChangePriority ----
+
+    [Fact]
+    public void ChangePriority_OnIncompleteTask_UpdatesPriority()
+    {
+        // Arrange
+        var task = CreateSampleTask();
+
+        // Act
+        task.ChangePriority(TaskPriority.Important);
+
+        // Assert
+        task.Priority.Should().Be(TaskPriority.Important);
+    }
+
+    [Fact]
+    public void ChangePriority_OnCompletedTask_ThrowsDomainException()
+    {
+        // Arrange
+        var task = CreateCompletedTask();
+
+        // Act
+        var act = () => task.ChangePriority(TaskPriority.Important);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Tamamlanmış bir görevin önceliği değiştirilemez.");
+    }
+
     // ---- AssignToDate ----
 
     [Fact]
