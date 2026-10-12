@@ -46,15 +46,33 @@
   görev zaten tamamlanmışsa Complete, tamamlanmamışsa Undo hata vermeden döner
   (offline kuyruğun tekrar denemesi için). `CopyTaskToDate` de aynı yeni Id
   ile tekrar gelirse mevcut kopyanın Id'sini döner.
+- Gün içi sıralama: her görev `SortOrder` (double) taşır. Sürükle-bırakta
+  komşu iki görevin ortası alınır; böylece tek görevi taşımak diğer satırları
+  değiştirmez (offline çakışmayı azaltır). Sıralama havuzda ve her günün
+  listesinde ayrı geçerlidir. Tamamlanmış görev yeniden sıralanamaz.
+  Tamamlananların alta düşmesi görsel sıralamadır, SortOrder'ı değiştirmez.
+- Odak rengi: görev opsiyonel olarak tek bir `FocusColor` taşır (sabit 5 renk).
+- Silme soft delete'tir (`IsDeleted`, `DeletedAt`). Havuzdaki görev her zaman
+  silinebilir; bir güne atanmış görev, günün değerlendirmesi yapılmamışsa
+  silinebilir (`Streak.EnsureDayNotEvaluated`). Silinmiş görev değiştirilemez,
+  tamamlanamaz, kopyalanamaz. Silme idempotent'tir.
+- Atama ve kopyalama hedefi, kullanıcının yerel "bugün"ü veya sonrası olmalıdır.
+  (Kural Application'da, kullanıcının saat dilimiyle kontrol edilir.)
 
 ## Henüz Kararlaştırılmadı (TODO)
 - [x] Undo penceresi: sınırsız mı, süre sınırlı mı (örn. 5 dk)?
 - [ ] "Akıllı zaman/öncelik algılama" hangi kelimeleri/pattern'leri tanıyacak?
-- [ ] Bir görev aynı anda birden fazla FocusArea (renk etiketi) alabilir mi?
+- [x] Bir görev aynı anda birden fazla FocusArea (renk etiketi) alabilir mi?
 - [x] ReminderTime eklendi — AssignedDate'ten bağımsız, opsiyonel TimeOnly
-- [ ] Kopyalamada hedef gün geçmişte olabilir mi, yalnızca geçmiş günlerin
+- [x] Kopyalamada hedef gün geçmişte olabilir mi, yalnızca geçmiş günlerin
   görevleri mi kopyalanabilir? (Kullanıcının "bugünü" saat dilimine bağlı;
   Application tasarımında netleşecek.)
+- [ ] SortOrder'da ondalık hassasiyet tükenirse yeniden dizme (rebalance) stratejisi.
+- [ ] Offline'da dün yapılıp bugün senkronize olan atamaların "geçmiş gün"
+  kuralıyla çakışması (istemcinin yerel tarihini mi esas alacağız?).
+- [ ] "Akıllı zaman/öncelik algılama" istemcide mi sunucuda mı çalışacak?
+- [ ] FocusColor'lara kullanıcı tarafından isim verilmesi (v2.0).
+- [ ] Silinmiş kayıtların (mezar taşı) kalıcı temizlenme süresi.
 
 ## İlgili Katmanlar
 - Domain: `PlanningTask` entity (bkz. Tasks/PlanningTask.cs — referans implementasyon)

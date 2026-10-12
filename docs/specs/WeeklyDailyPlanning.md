@@ -28,9 +28,15 @@
   aralığına düşen haftaya aittir. Aynı kullanıcı için aynı `WeekStartDate`
   ile ikinci bir hafta oluşturulamaz (benzersizlik, Persistence'ta unique
   index ile garanti edilecek).
+- PlanningWeek, ilk görev o haftadaki bir güne atandığında Application
+  katmanında "yoksa oluştur" mantığıyla oluşturulur. İki cihaz aynı anda
+  oluşturmaya çalışırsa (UserId, WeekStartDate) unique index'i çakışmayı
+  yakalar ve handler mevcut kaydı kullanır.
+- Kullanıcı yerel "bugün"ünden o haftanın Pazar'ına kadar ve sonraki haftaları
+  planlayabilir. Geçmiş günler kapalıdır.
 
 ## Henüz Kararlaştırılmadı (TODO)
-- [ ] `PlanningWeek` ne zaman oluşturulur? (Kullanıcı ilk kez o haftaya bir
+- [x] `PlanningWeek` ne zaman oluşturulur? (Kullanıcı ilk kez o haftaya bir
   görev atadığında Application katmanında "yoksa oluştur" mantığıyla mı,
   yoksa önceden tüm haftalar baştan mı oluşturulur?) — Application katmanına
   geçtiğimizde netleştirilecek.
@@ -42,6 +48,7 @@
 - [ ] İki parmak hareketiyle makro görünüme geçiş sırasında kaç hafta
   önceden/sonradan gösterilecek? (UI/mobil tarafı ilgilendiriyor, Domain'i
   etkilemiyor.)
+- [ ] Arşiv sorgularında sayfalama.
 
 ## İlgili Katmanlar
 - Domain: `PlanningWeek` entity (bkz. Weeks/PlanningWeek.cs)

@@ -27,6 +27,9 @@
 - Günlük değerlendirme idempotent olmalıdır: aynı gün için `EvaluateDay()`
   iki kez çağrılamaz (örn. Hosted Service yanlışlıkla iki kez tetiklenirse).
   Bu, `LastEvaluatedDate` alanıyla Domain seviyesinde garanti altına alınır.
+- "Gün sonu", kullanıcının saat dilimine göre yerel 00:00'dır (`UserProfile`'daki
+  IANA saat dilimi). Sunucu "hangi yerel gün bitti" kararını Application'da verir;
+  Streak.EvaluateDay'e sadece sonuç gelir.
 
 ## Henüz Kararlaştırılmadı (TODO)
 - [ ] `AvailableFreezes` nasıl kazanılır? (Elmas harcama, Premium üyelik,
@@ -43,6 +46,10 @@
   ederse, değerlendirme o tamamlamayı görmeden çalışmış olabilir. Bir
   bekleme süresi (grace period) gerekebilir. Infrastructure'da
   değerlendirme tetiklenirken karar verilecek.
+- [ ] Hiç görevi olmayan günün seriye etkisi (kırar mı, nötr mü?).
+  Öneri: nötr (seri değişmez, EvaluateDay çağrılmaz).
+- [ ] Maskot tepkileri (hangi eyleme hangi tepki), günlük özlü sözlerin kaynağı.
+- [ ] Zamanlı akıllı bildirimlerin kuralları (Infrastructure'a geçerken).
 
 ## İlgili Katmanlar
 - Domain: `Streak` entity (bkz. Gamification/Streak.cs), `TaskPriority` enum
