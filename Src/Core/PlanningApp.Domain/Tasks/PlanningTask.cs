@@ -85,6 +85,16 @@ public class PlanningTask
         if (IsCompleted)
             throw new DomainException("Görev zaten tamamlanmış.");
 
+        // completedAt istemcinin yerel offset'iyle gelir; DateTime bileşeni kullanıcının yerel gününü verir
+        var assignedDate = AssignedDate.Value;
+        var completedLocalDate = DateOnly.FromDateTime(completedAt.DateTime);
+
+        if (completedLocalDate < assignedDate)
+            throw new DomainException("Gelecekteki bir güne atanmış görev tamamlanamaz.");
+
+        if (completedLocalDate > assignedDate)
+            throw new DomainException("Geçmiş güne atanmış görev tamamlanamaz; görevi yeni bir güne kopyalayın.");
+
         IsCompleted = true;
         CompletedAt = completedAt;
     }
@@ -107,5 +117,16 @@ public class PlanningTask
             throw new DomainException("Tamamlanmış bir görevin başlığı değiştirilemez.");
 
         Title = newTitle.Trim();
+    }
+
+    // Orijinal görev değişmez; kopya yeni Id ile, hatırlatıcısız olarak hedef güne atanır
+    public PlanningTask CopyToDate(Guid newId, DateOnly targetDate, DateTimeOffset createdAt)
+    {
+        if (IsCompleted)
+            throw new DomainException("Tamamlanmış bir görev kopyalanamaz.");
+
+        var copy = new PlanningTask(newId, UserId, Title, Priority, createdAt);
+        copy.AssignToDate(targetDate);
+        return copy;
     }
 }

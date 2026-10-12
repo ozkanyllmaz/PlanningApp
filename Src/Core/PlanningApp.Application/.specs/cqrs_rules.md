@@ -28,7 +28,7 @@
   `DateTime.Now`, `DateTime.UtcNow`, `DateTimeOffset.UtcNow` doğrudan
   kullanılmaz. Alınan zaman Domain metotlarına parametre olarak geçirilir.
 - İstemciden gelen ID ile oluşturma Command'ları idempotent yazılır: aynı
-  kullanıcı için aynı ID varsa hata fırlatılmaz, mevcut kaydın ID'si döner.
+  kullanıcı için aynı ID varsa hata fırlatılmaz, mevcut kaydın ID'si döner. Complete ve Undo gibi durum değiştiren Command’lar da hedef durum zaten sağlanmışsa hata vermeden döner.
   Altın örnek: `CreateTaskCommandHandler`.
 
 ## Kullanıcı Kimliği ve Sahiplik

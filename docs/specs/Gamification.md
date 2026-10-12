@@ -38,6 +38,11 @@
 - [ ] `EvaluateDay()`'i kim, ne zaman tetikler? (Muhtemelen Infrastructure'daki
   bir Hosted Service, her gün gece yarısı — Infrastructure katmanına
   geçildiğinde netleştirilecek.)
+- [ ] Gün sonu değerlendirmesi ile offline'da gecikmeli senkronize edilen
+  tamamlamalar: kullanıcı 23:50'de offline tamamlayıp ertesi gün senkronize
+  ederse, değerlendirme o tamamlamayı görmeden çalışmış olabilir. Bir
+  bekleme süresi (grace period) gerekebilir. Infrastructure'da
+  değerlendirme tetiklenirken karar verilecek.
 
 ## İlgili Katmanlar
 - Domain: `Streak` entity (bkz. Gamification/Streak.cs), `TaskPriority` enum

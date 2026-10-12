@@ -65,4 +65,11 @@ public sealed class Streak
 
         AvailableFreezes += amount;
     }
+
+    // Günün değerlendirmesi yapılmışsa o güne ait görev durumları artık değiştirilemez
+    public void EnsureDayNotEvaluated(DateOnly date)
+    {
+        if (LastEvaluatedDate is not null && date <= LastEvaluatedDate)
+            throw new DomainException("Değerlendirilmiş bir günün görev durumu değiştirilemez.");
+    }
 }

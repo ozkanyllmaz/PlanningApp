@@ -24,12 +24,37 @@
   YOK — her görev için bilinçli bir seçim yapılmalı).
 - Her görev bir kullanıcıya aittir (`UserId`, oluşturulurken verilir,
   değişmez). Bir kullanıcı sadece kendi görevlerini görür ve değiştirir.
+- Görev oluşturma idempotent'tir: aynı kullanıcı için aynı `Id` ile tekrar
+  gelen `CreateTaskCommand` yeni kayıt oluşturmaz, mevcut görevin Id'sini
+  döner (offline kuyruğun tekrar denemesi için).
+- `Id` ve `CreatedAt` istemciden gelir. `CreatedAt`, sunucu saatinden 5
+  dakikadan fazla ileride olamaz.
+- Görev başlığı en fazla 200 karakter (TODO: sınır netleşmedi, varsayım).
+- Görev yalnızca atandığı günün KENDİSİNDE tamamlanabilir. Gün, `CompletedAt`
+  değerinin yerel tarihine göre belirlenir: istemci `CompletedAt`'i kendi
+  yerel offset'iyle gönderir, UTC'ye çevirmez.
+- Gelecekteki güne atanmış görev tamamlanamaz; kullanıcı bugüne çekerse
+  (`AssignToDate`) o gün tamamlanabilir.
+- Geçmiş güne atanmış görev tamamlanamaz. Görev geçmiş günde tamamlanmamış
+  olarak KALIR (başarısızlık görünür kalsın diye taşınmaz). Kullanıcı görevi
+  yeni bir güne KOPYALAYABİLİR (`CopyToDate`): yeni Id, aynı başlık ve öncelik,
+  hatırlatıcı kopyalanmaz, kaynak görev değişmez. Sadece tamamlanmamış görev
+  kopyalanabilir.
+- Undo: görevin atandığı günün streak değerlendirmesi yapılana kadar mümkündür
+  (`Streak.EnsureDayNotEvaluated`). Streak kaydı yoksa geri alınabilir.
+- `CompleteTask` ve `UndoTaskCompletion` handler seviyesinde idempotent'tir:
+  görev zaten tamamlanmışsa Complete, tamamlanmamışsa Undo hata vermeden döner
+  (offline kuyruğun tekrar denemesi için). `CopyTaskToDate` de aynı yeni Id
+  ile tekrar gelirse mevcut kopyanın Id'sini döner.
 
 ## Henüz Kararlaştırılmadı (TODO)
-- [ ] Undo penceresi: sınırsız mı, süre sınırlı mı (örn. 5 dk)?
+- [x] Undo penceresi: sınırsız mı, süre sınırlı mı (örn. 5 dk)?
 - [ ] "Akıllı zaman/öncelik algılama" hangi kelimeleri/pattern'leri tanıyacak?
 - [ ] Bir görev aynı anda birden fazla FocusArea (renk etiketi) alabilir mi?
 - [x] ReminderTime eklendi — AssignedDate'ten bağımsız, opsiyonel TimeOnly
+- [ ] Kopyalamada hedef gün geçmişte olabilir mi, yalnızca geçmiş günlerin
+  görevleri mi kopyalanabilir? (Kullanıcının "bugünü" saat dilimine bağlı;
+  Application tasarımında netleşecek.)
 
 ## İlgili Katmanlar
 - Domain: `PlanningTask` entity (bkz. Tasks/PlanningTask.cs — referans implementasyon)
