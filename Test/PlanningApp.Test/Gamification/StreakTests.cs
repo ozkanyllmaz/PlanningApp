@@ -251,6 +251,65 @@ public class StreakTests
         streak.AvailableFreezes.Should().Be(0);
     }
 
+    // ---- EnsureDayNotEvaluated ----
+
+    [Fact]
+    public void EnsureDayNotEvaluated_WithNoEvaluationYet_DoesNotThrow()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+
+        // Act
+        var act = () => streak.EnsureDayNotEvaluated(StartDate);
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void EnsureDayNotEvaluated_WithDateAfterLastEvaluatedDate_DoesNotThrow()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateDay(80m, StartDate);
+
+        // Act
+        var act = () => streak.EnsureDayNotEvaluated(StartDate.AddDays(1));
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void EnsureDayNotEvaluated_OnLastEvaluatedDate_ThrowsDomainException()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateDay(80m, StartDate);
+
+        // Act
+        var act = () => streak.EnsureDayNotEvaluated(StartDate);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Değerlendirilmiş bir günün görev durumu değiştirilemez.");
+    }
+
+    [Fact]
+    public void EnsureDayNotEvaluated_WithDateBeforeLastEvaluatedDate_ThrowsDomainException()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateDay(80m, StartDate.AddDays(3));
+
+        // Act
+        var act = () => streak.EnsureDayNotEvaluated(StartDate.AddDays(2));
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Değerlendirilmiş bir günün görev durumu değiştirilemez.");
+    }
+
     // ---- Test Helpers ----
 
     private static Streak CreateSampleStreak()
