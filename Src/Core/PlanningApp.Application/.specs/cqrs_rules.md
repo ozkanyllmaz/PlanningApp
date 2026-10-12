@@ -3,10 +3,15 @@
 ## Yapı
 - Her use case bir Command (durum değiştirir) veya Query (sadece okur) +
   karşılık gelen Handler'dır (MediatR).
-- Feature bazlı klasörleme, her use case kendi klasöründe:
-  `Tasks/Commands/CreateTask/` içinde `CreateTaskCommand.cs`,
-  `CreateTaskCommandHandler.cs`, `CreateTaskCommandValidator.cs`.
-  Query'ler için `Weeks/Queries/GetWeeklyPlan/` gibi.
+- Klasörleme: Persistence/Infrastructure'ın uygulayacağı TÜM interface'ler
+  (`IPlanningTaskRepository`, `IUnitOfWork`, `ICurrentUserService` vb.)
+  `Common/Interfaces/` altında tutulur (repository'ler `Repositories/` alt
+  klasöründe). Use case'ler feature bazlı `Features/` altında, her biri kendi
+  klasöründe: `Features/Tasks/Commands/CreateTask/` içinde
+  `CreateTaskCommand.cs`, `CreateTaskCommandHandler.cs`,
+  `CreateTaskCommandValidator.cs`. Query'ler için
+  `Features/Weeks/Queries/GetWeeklyPlan/` gibi. Ortak altyapı
+  (`Behaviors/`, `Exceptions/`) `Common/` altındadır.
 - İsimlendirme: `CreateTaskCommand`, `AssignTaskToDateCommand`,
   `CompleteTaskCommand`, `UndoTaskCompletionCommand`, `RenameTaskCommand`,
   `GetWeeklyPlanQuery`, `GetDailyPlanQuery`, `GetArchivedWeeksQuery`.
