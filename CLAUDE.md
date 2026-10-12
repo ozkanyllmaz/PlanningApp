@@ -61,11 +61,12 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
 2. **Özellik spec'i** (`docs/specs/*.md`) — üzerinde çalıştığın Command/Query/
    entity hangi özelliğe aitse o dosya da okunur. İş kuralının NASIL
    çalıştığını tanımlar.
-   - docs/specs/TaskManagement.md — görev CRUD, akıllı zaman/öncelik algılama, undo
-   - docs/specs/WeeklyDailyPlanning.md — makro/mikro geçiş, sürükle-bırak, tamamlama kısıtı
-   - docs/specs/OfflineSync.md — SQLite kuyruk, çakışma çözümü (henüz taslak)
-   - docs/specs/LockScreenQuickAccess.md — kilit ekranı akışı (henüz taslak)
-   - docs/specs/Gamification.md — streak, maskot, arşiv (henüz taslak)
+   - docs/specs/TaskManagement.md — görev CRUD, sıralama, silme, tamamlama, undo, kopyalama
+   - docs/specs/WeeklyDailyPlanning.md — makro/mikro geçiş, sürükle-bırak, hafta oluşturma, tamamlama kısıtı
+   - docs/specs/Gamification.md — streak, gün sonu değerlendirmesi, maskot, arşiv
+   - docs/specs/Authentication.md — kayıt/giriş, Google girişi, JWT, saat dilimi (taslak)
+   - docs/specs/OfflineSync.md — push/pull senkronizasyonu, çakışma çözümü (taslak)
+   - docs/specs/LockScreenQuickAccess.md — kilit ekranı hızlı ekleme (araştırma aşamasında, kesinleşmedi)
 
 ## Exception Stratejisi
 Her katman kendi hata tipini kendi içinde tanımlar, başka katmana taşımaz
