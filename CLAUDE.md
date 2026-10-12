@@ -48,6 +48,8 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
     ayrı bir proje açılır.
 - Her iki proje de framework olarak SADECE xUnit kullanır. Mocking: Moq,
   assertion: FluentAssertions. NUnit/MSTest ASLA eklenmez.
+- FluentAssertions sürümü 7.2.0'a SABİTTİR (8.x ticari lisans gerektirir).
+  Sürüm yükseltilmez, paket referansı elle değiştirilmez.
 - Her yeni Command/Query Handler'ı için Test projesinde en az bir
   happy-path ve bir validation-failure senaryosu; Persistence/Infrastructure'a
   dokunan her yeni repository/hosted-service davranışı için

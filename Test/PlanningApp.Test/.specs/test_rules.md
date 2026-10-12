@@ -3,6 +3,8 @@
 ## Kapsam ve Referanslar
 - Referanslar: SADECE PlanningApp.Domain, PlanningApp.Application.
 - Framework: SADECE xUnit. Mocking: Moq. Assertion: FluentAssertions.
+- FluentAssertions sürümü 7.2.0'a SABİTTİR (8.x ticari lisans gerektirir).
+  Sürüm yükseltilmez, paket referansı elle değiştirilmez.
 - Kapsam: Domain invariant'ları + Application Handler'ları, tüm
   repository/dış servis bağımlılıkları MOCK'lanarak test edilir.
 - Gerçek veritabanı, gerçek dosya sistemi, gerçek ağ çağrısı YAPILMAZ.
