@@ -18,6 +18,10 @@ public sealed class CreateTaskCommandValidator : AbstractValidator<CreateTaskCom
 
         RuleFor(x => x.Priority).IsInEnum();
 
+        RuleFor(x => x.SortOrder)
+            .Must(double.IsFinite)
+            .WithMessage("Sıralama değeri geçerli bir sayı olmalıdır.");
+
         RuleFor(x => x.CreatedAt)
             .Must(createdAt => createdAt <= timeProvider.GetUtcNow() + ClockSkewTolerance)
             .WithMessage("Oluşturulma zamanı gelecekte olamaz.");

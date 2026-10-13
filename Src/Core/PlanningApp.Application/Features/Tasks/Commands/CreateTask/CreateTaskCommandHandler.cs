@@ -22,7 +22,7 @@ public sealed class CreateTaskCommandHandler(
             return existing.Id;
 
         var task = PlanningTask.CreateInPool(
-            request.Id, userId, request.Title, request.Priority, request.CreatedAt);
+    request.Id, userId, request.Title, request.Priority, request.SortOrder, request.CreatedAt);
 
         await taskRepository.AddAsync(task, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

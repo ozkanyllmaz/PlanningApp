@@ -5,6 +5,7 @@ namespace PlanningApp.Domain.Gamification;
 public sealed class Streak
 {
     private const decimal RequiredCompletionPercentage = 70m;
+    private const int MaxConsecutiveEmptyDays = 2;
 
     public Guid Id { get; private set; }
     public Guid UserId { get; private set; }
@@ -12,6 +13,7 @@ public sealed class Streak
     public int LongestStreak { get; private set; }
     public DateOnly? LastEvaluatedDate { get; private set; }
     public int AvailableFreezes { get; private set; }
+    public int ConsecutiveEmptyDays { get; private set; }
 
     private Streak(Guid id, Guid userId)
     {
@@ -21,6 +23,7 @@ public sealed class Streak
         LongestStreak = 0;
         LastEvaluatedDate = null;
         AvailableFreezes = 0;
+        ConsecutiveEmptyDays = 0;
     }
 
     public static Streak Create(Guid id, Guid userId)
@@ -31,13 +34,13 @@ public sealed class Streak
         return new Streak(id, userId);
     }
 
+    // Görevi olan günün değerlendirmesi
     public void EvaluateDay(decimal weightedCompletionPercentage, DateOnly date)
     {
         if (weightedCompletionPercentage is < 0 or > 100)
             throw new DomainException("Ağırlıklı tamamlanma yüzdesi 0-100 aralığında olmalıdır.");
 
-        if (LastEvaluatedDate is not null && date <= LastEvaluatedDate)
-            throw new DomainException("Bu gün için değerlendirme zaten yapılmış veya geçmişe dönük bir tarih verildi.");
+        EnsureDateAfterLastEvaluation(date);
 
         if (weightedCompletionPercentage >= RequiredCompletionPercentage)
         {
@@ -48,12 +51,27 @@ public sealed class Streak
         else if (AvailableFreezes > 0)
         {
             AvailableFreezes--;
-            // Seri ne sıfırlanır ne artar — olduğu yerde kalır.
+            // Seri ne sıfırlanır ne artar, olduğu yerde kalır.
         }
         else
         {
             CurrentStreak = 0;
         }
+
+        ConsecutiveEmptyDays = 0; // görevi olan gün boş gün serisini keser
+        LastEvaluatedDate = date;
+    }
+
+    // Hiç (silinmemiş) görevi olmayan günün değerlendirmesi: seri artmaz,
+    // ardışık en fazla MaxConsecutiveEmptyDays boş güne izin verilir, aşılırsa seri sıfırlanır
+    public void EvaluateEmptyDay(DateOnly date)
+    {
+        EnsureDateAfterLastEvaluation(date);
+
+        ConsecutiveEmptyDays++;
+
+        if (ConsecutiveEmptyDays > MaxConsecutiveEmptyDays)
+            CurrentStreak = 0;
 
         LastEvaluatedDate = date;
     }
@@ -71,5 +89,11 @@ public sealed class Streak
     {
         if (LastEvaluatedDate is not null && date <= LastEvaluatedDate)
             throw new DomainException("Değerlendirilmiş bir günün görev durumu değiştirilemez.");
+    }
+
+    private void EnsureDateAfterLastEvaluation(DateOnly date)
+    {
+        if (LastEvaluatedDate is not null && date <= LastEvaluatedDate)
+            throw new DomainException("Bu gün için değerlendirme zaten yapılmış veya geçmişe dönük bir tarih verildi.");
     }
 }

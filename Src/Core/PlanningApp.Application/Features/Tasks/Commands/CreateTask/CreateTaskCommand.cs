@@ -9,5 +9,6 @@ public sealed record CreateTaskCommand(
     Guid Id,
     string Title,
     TaskPriority Priority,
+    double SortOrder,
     DateTimeOffset CreatedAt) : IRequest<Guid>;
 

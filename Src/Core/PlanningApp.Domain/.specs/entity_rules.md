@@ -51,6 +51,15 @@
   veya `IReadOnlyList<T>` olarak, `get`-only property ile açılır. Listeye
   ekleme/çıkarma SADECE davranışsal bir metotla (örn. `AddTask(...)`) yapılır,
   asla doğrudan koleksiyon üzerinden değil.
+- **Soft Delete:** Silinebilen entity'ler `IsDeleted` ve `DeletedAt` taşır.
+  Silinmiş bir entity'de durum değiştiren HİÇBİR metot çalışmaz
+  (`DomainException`). Silme işlemi `Delete(deletedAt)` metoduyla yapılır.
+- **Sayısal Sıralama Değeri:** `double` tipindeki sıralama alanları
+  `double.IsFinite` ile doğrulanır (NaN ve sonsuz değerler reddedilir).
+  Değerin nasıl hesaplanacağı (komşuların ortası vb.) istemcinin/Application'ın işidir.
+- **Saat Dilimi:** `TimeZoneInfo` ile saat dilimi çevirisi yapılabilir
+  (dışarıdan verilen an çevrilir); `TimeZoneInfo.Local`, `DateTime.Now`
+  ve benzeri sistem saati okumaları yine YASAK.
 
 **Özel İstisnalar:** İş kuralı ihlallerinde `System.Exception` veya
   `ArgumentException` yerine her zaman `PlanningApp.Domain.Common.DomainException`
@@ -58,8 +67,7 @@
 - `DomainException` SADECE bu projede (`PlanningApp.Domain/Common/`) tanımlanır,
   Application veya başka bir katmana taşınmaz (bkz. CLAUDE.md → Exception
   Stratejisi).
-- Value Object'ler burada tanımlanır: `TaskPriority`, `FocusArea` (renk
-  etiketli odak alanı), `StreakCount` gibi.
+- Value Object'ler burada tanımlanır: `TaskPriority`, `FocusColor` (sabit 5 renk), `StreakCount` gibi.
 - Domain event'leri (varsa, örn. `TaskCompletedDomainEvent`) burada
   TANIMLANIR ama dispatch/tetikleme mekanizması Infrastructure'ın işidir.
 - Kümülatif havuz (backlog) ile haftalık plana atanmış görev arasındaki

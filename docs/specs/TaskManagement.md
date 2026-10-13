@@ -58,6 +58,15 @@
   tamamlanamaz, kopyalanamaz. Silme idempotent'tir.
 - Atama ve kopyalama hedefi, kullanıcının yerel "bugün"ü veya sonrası olmalıdır.
   (Kural Application'da, kullanıcının saat dilimiyle kontrol edilir.)
+- `SortOrder` değerini istemci hesaplar ve yerleştirme Command'larıyla
+  gönderir (oluşturma, güne atama, havuza geri alma, kopyalama, yeniden
+  sıralama). Domain yalnızca değerin geçerli (sonlu) bir sayı olduğunu doğrular.
+  Eşit değerlerde sıra `CreatedAt`, sonra `Id` ile belirlenir (cihazlar arası
+  tutarlılık için).
+- Kopyalama (`CopyToDate`) başlık, öncelik ve odak rengini taşır;
+  hatırlatıcıyı taşımaz.
+- Silinmiş görev hiçbir şekilde değiştirilemez, tamamlanamaz, kopyalanamaz.
+  Tamamlanmış bir görev silinebilir (günü değerlendirilmediyse).
 
 ## Henüz Kararlaştırılmadı (TODO)
 - [x] Undo penceresi: sınırsız mı, süre sınırlı mı (örn. 5 dk)?
@@ -73,6 +82,12 @@
 - [ ] "Akıllı zaman/öncelik algılama" istemcide mi sunucuda mı çalışacak?
 - [ ] FocusColor'lara kullanıcı tarafından isim verilmesi (v2.0).
 - [ ] Silinmiş kayıtların (mezar taşı) kalıcı temizlenme süresi.
+- [ ] `CreateTaskCommand` odak rengi almıyor; renk `SetTaskFocusColor`
+  komutuyla ayrı atanır. Offline'da iki komut yerine tek komut gerekirse
+  birleştirilecek.
+- [ ] Repository `GetByIdAsync` silinmiş kayıtları DÖNDÜRMEZ (başkasının/silinmiş
+  kayıt "bulunamadı" davranışı). Idempotent `DeleteTask` için silinmiş kaydı da
+  görebilen ayrı bir sorgu gerekecek; DeleteTask yazılırken netleştirilecek.
 
 ## İlgili Katmanlar
 - Domain: `PlanningTask` entity (bkz. Tasks/PlanningTask.cs — referans implementasyon)
