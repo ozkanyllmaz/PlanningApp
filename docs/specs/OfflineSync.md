@@ -13,6 +13,8 @@
 - Yeniden deneme: ağ hatası ve 5xx tekrar denenir; 4xx (kural/doğrulama
   reddi) kalıcıdır, istemci işlemi kuyruktan atar, sunucu durumunu çeker
   ve kullanıcıya bildirir.
+- Bir görev silindikten sonra gelen (gecikmeli) güncelleme istekleri 404 döner;
+  istemci bunu kalıcı ret sayıp kuyruktan atar ve kullanıcıya hata göstermez.
 
 ## Henüz Kararlaştırılmadı (TODO)
 - [ ] Pull imleci: zaman damgası yerine artan sürüm numarası (sequence) daha

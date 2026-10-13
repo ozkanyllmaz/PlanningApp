@@ -30,3 +30,7 @@
 - Repository implementasyonları, PlanningApp.IntegrationTests'te
   gerçek/in-memory PostgreSQL'e karşı test edilir (PlanningApp.Test'e
   DEĞİL — o mock kullanır).
+- `GetByIdAsync(userId, id)` başka kullanıcının kaydını döndürmez; silinmiş
+  kaydı (`IsDeleted`) döndürmez. `GetByIdIncludingDeletedAsync` silinmiş kaydı
+  döndürür ama yine başka kullanıcınınkini döndürmez. Bu üç davranış
+  IntegrationTests'te gerçek veritabanına karşı doğrulanır.

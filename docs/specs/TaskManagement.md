@@ -88,8 +88,8 @@
 ## İlgili Katmanlar
 - Domain: `PlanningTask` entity (bkz. Tasks/PlanningTask.cs — referans implementasyon),
   `TaskPriority` ve `FocusColor` (Tasks/)
-- Application: CreateTaskCommand ve CompleteTaskCommand yazıldı (altın örnekler);
-  kalan Command'lar aşağıdaki "Command Kataloğu"ndadır
+- Application: tüm görev Command'ları yazıldı (CreateTask, CompleteTask ve
+  Command Kataloğu'ndaki 11 Command); Query'ler ve gün değerlendirmesi henüz yok
 - Persistence: (henüz yok)
 - WebApi: (henüz yok)
 
@@ -114,7 +114,9 @@ Ortak kurallar (aşağıdaki tüm Command'lar için):
   `NotFoundException`), hedef gün değerlendirilmiş olamaz, ve hedef günün
   haftası yoksa oluşturulur. Hafta başlangıcı (Pazartesi) tek bir yardımcıda
   hesaplanır (`Common/Helpers/WeekCalendar.GetWeekStart(DateOnly)`); hafta
-  ID'sini handler üretir (`Guid.NewGuid()`).
+  ID'sini handler üretir (`Guid.NewGuid()`). Hedef gün yerel bugünden önceyse `ValidationException` fırlatılır
+  (alan adı `TargetDate`/`Date`); hedef gün değerlendirilmişse Domain'in
+  `DomainException`'ı olduğu gibi akar.
 
 | Command | Girdi | Kurallar / yan etkiler | Idempotent sayılan durum |
 |---|---|---|---|
