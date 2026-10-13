@@ -89,7 +89,7 @@ public class CreateTaskCommandHandlerTests
 
         // Assert
         _taskRepository.Verify(
-            repository => repository.GetByIdAsync(currentUserId, command.Id, It.IsAny<CancellationToken>()),
+            repository => repository.GetByIdIncludingDeletedAsync(currentUserId, command.Id, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -104,7 +104,7 @@ public class CreateTaskCommandHandlerTests
             command.Id, SampleUserId, "Mevcut görev", TaskPriority.Normal, SampleSortOrder, CreatedAt);
 
         _taskRepository
-            .Setup(repository => repository.GetByIdAsync(SampleUserId, command.Id, It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.GetByIdIncludingDeletedAsync(SampleUserId, command.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingTask);
 
         // Act
@@ -112,6 +112,31 @@ public class CreateTaskCommandHandlerTests
 
         // Assert
         result.Should().Be(existingTask.Id);
+        _taskRepository.Verify(
+            repository => repository.AddAsync(It.IsAny<PlanningTask>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _unitOfWork.Verify(unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_WithExistingDeletedTask_ReturnsExistingIdWithoutAdding()
+    {
+        // Arrange
+        var command = CreateSampleCommand();
+        var deletedTask = PlanningTask.CreateInPool(
+            command.Id, SampleUserId, "Silinmiş görev", TaskPriority.Normal, SampleSortOrder, CreatedAt);
+        deletedTask.Delete(CreatedAt.AddHours(1));
+
+        // Silinmiş kayıt yalnızca GetByIdIncludingDeletedAsync ile görülür; GetByIdAsync null döner
+        _taskRepository
+            .Setup(repository => repository.GetByIdIncludingDeletedAsync(SampleUserId, command.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(deletedTask);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().Be(command.Id);
         _taskRepository.Verify(
             repository => repository.AddAsync(It.IsAny<PlanningTask>(), It.IsAny<CancellationToken>()),
             Times.Never);

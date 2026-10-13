@@ -16,8 +16,9 @@ public sealed class CreateTaskCommandHandler(
         var userId = currentUser.UserId;
 
         // Idempotency: offline kuyruk aynı isteği tekrar gönderebilir.
-        // Aynı Id bu kullanıcıda zaten varsa yeni kayıt açmadan başarılı dön.
-        var existing = await taskRepository.GetByIdAsync(userId, request.Id, cancellationToken);
+        // Aynı Id bu kullanıcıda zaten varsa (silinmiş olsa da) yeni kayıt açmadan başarılı dön;
+        // aksi halde silinmiş görevin tekrar gelen isteği birincil anahtar çakışması yaratırdı.
+        var existing = await taskRepository.GetByIdIncludingDeletedAsync(userId, request.Id, cancellationToken);
         if (existing is not null)
             return existing.Id;
 

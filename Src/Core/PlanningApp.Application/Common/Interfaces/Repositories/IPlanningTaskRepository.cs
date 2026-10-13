@@ -8,6 +8,10 @@ public interface IPlanningTaskRepository
     // Sorgu her zaman UserId ile filtrelenir; başka kullanıcının kaydı "bulunamadı" sayılır
     Task<PlanningTask?> GetByIdAsync(Guid userId, Guid id, CancellationToken cancellationToken);
 
+    // Silinmiş kayıtları da döner; SADECE idempotency kontrolleri ve DeleteTask kullanır.
+    // Sorgu yine UserId ile filtrelenir.
+    Task<PlanningTask?> GetByIdIncludingDeletedAsync(Guid userId, Guid id, CancellationToken cancellationToken);
+
     Task AddAsync(PlanningTask task, CancellationToken cancellationToken);
 
 }
