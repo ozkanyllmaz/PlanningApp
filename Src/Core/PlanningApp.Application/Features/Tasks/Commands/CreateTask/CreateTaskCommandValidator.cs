@@ -1,13 +1,11 @@
 using System;
 using FluentValidation;
+using PlanningApp.Application.Common.Validation;
 
 namespace PlanningApp.Application.Features.Tasks.Commands.CreateTask;
 
 public sealed class CreateTaskCommandValidator : AbstractValidator<CreateTaskCommand>
 {
-    // İstemci saati ile sunucu saati arasındaki küçük farka izin verilen tolerans
-    private static readonly TimeSpan ClockSkewTolerance = TimeSpan.FromMinutes(5);
-
     public CreateTaskCommandValidator(TimeProvider timeProvider)
     {
         RuleFor(x => x.Id).NotEmpty();
@@ -23,7 +21,6 @@ public sealed class CreateTaskCommandValidator : AbstractValidator<CreateTaskCom
             .WithMessage("Sıralama değeri geçerli bir sayı olmalıdır.");
 
         RuleFor(x => x.CreatedAt)
-            .Must(createdAt => createdAt <= timeProvider.GetUtcNow() + ClockSkewTolerance)
-            .WithMessage("Oluşturulma zamanı gelecekte olamaz.");
+            .MustNotBeInFuture(timeProvider, "Oluşturulma zamanı gelecekte olamaz.");
     }
 }
