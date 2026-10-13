@@ -14,6 +14,38 @@ public class PlanningTaskTests
     private static readonly DateOnly AssignedDay = new(2026, 1, 7);
     private static readonly DateTimeOffset SampleCreatedAt = new(2026, 1, 5, 9, 0, 0, TimeSpan.FromHours(3));
     private static readonly DateTimeOffset SampleCompletedAt = new(2026, 1, 7, 10, 0, 0, TimeSpan.FromHours(3));
+    private static readonly DateTimeOffset SampleDeletedAt = new(2026, 1, 7, 12, 0, 0, TimeSpan.FromHours(3));
+
+    // Sabit sıralama değerleri; SampleSortOrder yerleştirmelerde, OtherSortOrder değişiklik testlerinde kullanılır
+    private const double SampleSortOrder = 1000d;
+    private const double OtherSortOrder = 2500.5d;
+
+    private const string InvalidSortOrderMessage = "Sıralama değeri geçerli bir sayı olmalıdır.";
+    private const string DeletedTaskMessage = "Silinmiş bir görev değiştirilemez.";
+
+    // Geçersiz (sonlu olmayan) sıralama değerleri
+    public static TheoryData<double> NonFiniteSortOrders => new()
+    {
+        double.NaN,
+        double.PositiveInfinity,
+        double.NegativeInfinity
+    };
+
+    // Silinmiş bir görev üzerinde denenen tüm değiştirici işlemler (CreateDeletedTask() ile hazırlanan görev)
+    public static TheoryData<string, Action<PlanningTask>> DeletedTaskOperations => new()
+    {
+        { "Rename", task => task.Rename("Yeni başlık") },
+        { "ChangePriority", task => task.ChangePriority(TaskPriority.Important) },
+        { "SetFocusColor", task => task.SetFocusColor(FocusColor.Red) },
+        { "Reorder", task => task.Reorder(OtherSortOrder) },
+        { "AssignToDate", task => task.AssignToDate(AssignedDay.AddDays(1), OtherSortOrder) },
+        { "ReturnToPool", task => task.ReturnToPool(OtherSortOrder) },
+        { "SetReminder", task => task.SetReminder(new TimeOnly(9, 0)) },
+        { "ClearReminder", task => task.ClearReminder() },
+        { "Complete", task => task.Complete(SampleCompletedAt) },
+        { "Uncomplete", task => task.Uncomplete() },
+        { "CopyToDate", task => task.CopyToDate(Guid.NewGuid(), AssignedDay.AddDays(1), OtherSortOrder, SampleCreatedAt) }
+    };
 
     // ---- CreateInPool ----
 
@@ -25,7 +57,7 @@ public class PlanningTaskTests
         var createdAt = SampleCreatedAt;
 
         // Act
-        var task = PlanningTask.CreateInPool(id, SampleUserId, "Markette süt al", TaskPriority.Normal, createdAt);
+        var task = PlanningTask.CreateInPool(id, SampleUserId, "Markette süt al", TaskPriority.Normal, SampleSortOrder, createdAt);
 
         // Assert
         task.Id.Should().Be(id);
@@ -47,7 +79,7 @@ public class PlanningTaskTests
         var createdAt = SampleCreatedAt;
 
         // Act
-        var act = () => PlanningTask.CreateInPool(id, SampleUserId, invalidTitle!, TaskPriority.Normal, createdAt);
+        var act = () => PlanningTask.CreateInPool(id, SampleUserId, invalidTitle!, TaskPriority.Normal, SampleSortOrder, createdAt);
 
         // Assert
         act.Should().Throw<DomainException>()
@@ -58,7 +90,7 @@ public class PlanningTaskTests
     public void CreateInPool_WithSurroundingWhitespace_TrimsTitle()
     {
         // Arrange & Act
-        var task = PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "  Spor yap  ", TaskPriority.Normal, SampleCreatedAt);
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "  Spor yap  ", TaskPriority.Normal, SampleSortOrder, SampleCreatedAt);
 
         // Assert
         task.Title.Should().Be("Spor yap");
@@ -71,7 +103,7 @@ public class PlanningTaskTests
         var priority = TaskPriority.Critical;
 
         // Act
-        var task = PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "Örnek görev", priority, SampleCreatedAt);
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "Örnek görev", priority, SampleSortOrder, SampleCreatedAt);
 
         // Assert
         task.Priority.Should().Be(TaskPriority.Critical);
@@ -84,7 +116,7 @@ public class PlanningTaskTests
         var userId = Guid.NewGuid();
 
         // Act
-        var task = PlanningTask.CreateInPool(Guid.NewGuid(), userId, "Örnek görev", TaskPriority.Normal, SampleCreatedAt);
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), userId, "Örnek görev", TaskPriority.Normal, SampleSortOrder, SampleCreatedAt);
 
         // Assert
         task.UserId.Should().Be(userId);
@@ -97,11 +129,39 @@ public class PlanningTaskTests
         var emptyUserId = Guid.Empty;
 
         // Act
-        var act = () => PlanningTask.CreateInPool(Guid.NewGuid(), emptyUserId, "Örnek görev", TaskPriority.Normal, SampleCreatedAt);
+        var act = () => PlanningTask.CreateInPool(Guid.NewGuid(), emptyUserId, "Örnek görev", TaskPriority.Normal, SampleSortOrder, SampleCreatedAt);
 
         // Assert
         act.Should().Throw<DomainException>()
             .WithMessage("Kullanıcı kimliği boş olamaz.");
+    }
+
+    [Fact]
+    public void CreateInPool_WithGivenSortOrder_StoresSortOrder()
+    {
+        // Arrange
+        var sortOrder = 1500.5d;
+
+        // Act
+        var task = PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "Örnek görev", TaskPriority.Normal, sortOrder, SampleCreatedAt);
+
+        // Assert
+        task.SortOrder.Should().Be(sortOrder);
+    }
+
+    [Theory]
+    [MemberData(nameof(NonFiniteSortOrders))]
+    public void CreateInPool_WithNonFiniteSortOrder_ThrowsDomainException(double invalidSortOrder)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        // Act
+        var act = () => PlanningTask.CreateInPool(id, SampleUserId, "Örnek görev", TaskPriority.Normal, invalidSortOrder, SampleCreatedAt);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage(InvalidSortOrderMessage);
     }
 
     // ---- ChangePriority ----
@@ -133,6 +193,111 @@ public class PlanningTaskTests
             .WithMessage("Tamamlanmış bir görevin önceliği değiştirilemez.");
     }
 
+    // ---- SetFocusColor ----
+
+    [Fact]
+    public void SetFocusColor_WithColor_SetsFocusColor()
+    {
+        // Arrange
+        var task = CreateSampleTask();
+
+        // Act
+        task.SetFocusColor(FocusColor.Purple);
+
+        // Assert
+        task.FocusColor.Should().Be(FocusColor.Purple);
+    }
+
+    [Fact]
+    public void SetFocusColor_WithNull_RemovesFocusColor()
+    {
+        // Arrange
+        var task = CreateSampleTask();
+        task.SetFocusColor(FocusColor.Blue);
+
+        // Act
+        task.SetFocusColor(null);
+
+        // Assert
+        task.FocusColor.Should().BeNull();
+    }
+
+    [Fact]
+    public void SetFocusColor_WithUndefinedValue_ThrowsDomainException()
+    {
+        // Arrange
+        var task = CreateSampleTask();
+        task.SetFocusColor(FocusColor.Green);
+
+        // Act
+        var act = () => task.SetFocusColor((FocusColor)99);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Geçersiz odak rengi.");
+        task.FocusColor.Should().Be(FocusColor.Green);
+    }
+
+    [Fact]
+    public void SetFocusColor_OnCompletedTask_ThrowsDomainException()
+    {
+        // Arrange
+        var task = CreateCompletedTask();
+
+        // Act
+        var act = () => task.SetFocusColor(FocusColor.Red);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Tamamlanmış bir görevin odak rengi değiştirilemez.");
+    }
+
+    // ---- Reorder ----
+
+    [Fact]
+    public void Reorder_OnIncompleteTask_UpdatesSortOrder()
+    {
+        // Arrange
+        var task = CreateSampleTask();
+
+        // Act
+        task.Reorder(OtherSortOrder);
+
+        // Assert
+        task.SortOrder.Should().Be(OtherSortOrder);
+    }
+
+    [Fact]
+    public void Reorder_OnCompletedTask_ThrowsDomainException()
+    {
+        // Arrange
+        var task = CreateCompletedTask();
+
+        // Act
+        var act = () => task.Reorder(OtherSortOrder);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Tamamlanmış bir görev yeniden sıralanamaz.");
+        task.SortOrder.Should().Be(SampleSortOrder);
+    }
+
+    [Theory]
+    [MemberData(nameof(NonFiniteSortOrders))]
+    public void Reorder_WithNonFiniteSortOrder_ThrowsDomainException(double invalidSortOrder)
+    {
+        // Arrange
+        var task = CreateSampleTask();
+
+        // Act
+        var act = () => task.Reorder(invalidSortOrder);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage(InvalidSortOrderMessage);
+        task.SortOrder.Should().Be(SampleSortOrder);
+    }
+
     // ---- AssignToDate ----
 
     [Fact]
@@ -143,7 +308,7 @@ public class PlanningTaskTests
         var date = AssignedDay;
 
         // Act
-        task.AssignToDate(date);
+        task.AssignToDate(date, SampleSortOrder);
 
         // Assert
         task.AssignedDate.Should().Be(date);
@@ -156,11 +321,42 @@ public class PlanningTaskTests
         var task = CreateCompletedTask();
 
         // Act
-        var act = () => task.AssignToDate(AssignedDay);
+        var act = () => task.AssignToDate(AssignedDay, SampleSortOrder);
 
         // Assert
         act.Should().Throw<DomainException>()
             .WithMessage("Tamamlanmış bir görevin tarihi değiştirilemez.");
+    }
+
+    [Fact]
+    public void AssignToDate_WithSortOrder_UpdatesSortOrder()
+    {
+        // Arrange
+        var task = CreateSampleTask();
+
+        // Act
+        task.AssignToDate(AssignedDay, OtherSortOrder);
+
+        // Assert
+        task.AssignedDate.Should().Be(AssignedDay);
+        task.SortOrder.Should().Be(OtherSortOrder);
+    }
+
+    [Theory]
+    [MemberData(nameof(NonFiniteSortOrders))]
+    public void AssignToDate_WithNonFiniteSortOrder_ThrowsDomainException(double invalidSortOrder)
+    {
+        // Arrange
+        var task = CreateSampleTask();
+
+        // Act
+        var act = () => task.AssignToDate(AssignedDay, invalidSortOrder);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage(InvalidSortOrderMessage);
+        task.AssignedDate.Should().BeNull();
+        task.SortOrder.Should().Be(SampleSortOrder);
     }
 
     // ---- SetReminder / ClearReminder ----
@@ -170,7 +366,7 @@ public class PlanningTaskTests
     {
         // Arrange
         var task = CreateSampleTask();
-        task.AssignToDate(AssignedDay);
+        task.AssignToDate(AssignedDay, SampleSortOrder);
         var reminderTime = new TimeOnly(9, 0);
 
         // Act
@@ -213,7 +409,7 @@ public class PlanningTaskTests
     {
         // Arrange
         var task = CreateSampleTask();
-        task.AssignToDate(AssignedDay);
+        task.AssignToDate(AssignedDay, SampleSortOrder);
         task.SetReminder(new TimeOnly(9, 0));
 
         // Act
@@ -230,11 +426,11 @@ public class PlanningTaskTests
     {
         // Arrange
         var task = CreateSampleTask();
-        task.AssignToDate(AssignedDay);
+        task.AssignToDate(AssignedDay, SampleSortOrder);
         task.SetReminder(new TimeOnly(9, 0));
 
         // Act
-        task.ReturnToPool();
+        task.ReturnToPool(SampleSortOrder);
 
         // Assert
         task.AssignedDate.Should().BeNull();
@@ -248,11 +444,42 @@ public class PlanningTaskTests
         var task = CreateCompletedTask();
 
         // Act
-        var act = () => task.ReturnToPool();
+        var act = () => task.ReturnToPool(SampleSortOrder);
 
         // Assert
         act.Should().Throw<DomainException>()
             .WithMessage("Tamamlanmış bir görev havuza geri alınamaz.");
+    }
+
+    [Fact]
+    public void ReturnToPool_WithSortOrder_UpdatesSortOrder()
+    {
+        // Arrange
+        var task = CreateAssignedTask(AssignedDay);
+
+        // Act
+        task.ReturnToPool(OtherSortOrder);
+
+        // Assert
+        task.AssignedDate.Should().BeNull();
+        task.SortOrder.Should().Be(OtherSortOrder);
+    }
+
+    [Theory]
+    [MemberData(nameof(NonFiniteSortOrders))]
+    public void ReturnToPool_WithNonFiniteSortOrder_ThrowsDomainException(double invalidSortOrder)
+    {
+        // Arrange
+        var task = CreateAssignedTask(AssignedDay);
+
+        // Act
+        var act = () => task.ReturnToPool(invalidSortOrder);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage(InvalidSortOrderMessage);
+        task.AssignedDate.Should().Be(AssignedDay);
+        task.SortOrder.Should().Be(SampleSortOrder);
     }
 
     // ---- Complete ----
@@ -262,7 +489,7 @@ public class PlanningTaskTests
     {
         // Arrange
         var task = CreateSampleTask();
-        task.AssignToDate(AssignedDay);
+        task.AssignToDate(AssignedDay, SampleSortOrder);
         var completedAt = SampleCompletedAt;
 
         // Act
@@ -374,7 +601,7 @@ public class PlanningTaskTests
     {
         // Arrange
         var task = CreateAssignedTask(AssignedDay.AddDays(1)); // yarına atanmış
-        task.AssignToDate(AssignedDay); // kullanıcı görevi bugüne çekti
+        task.AssignToDate(AssignedDay, SampleSortOrder); // kullanıcı görevi bugüne çekti
 
         // Act
         task.Complete(SampleCompletedAt);
@@ -466,14 +693,14 @@ public class PlanningTaskTests
     {
         // Arrange
         var source = PlanningTask.CreateInPool(
-            Guid.NewGuid(), SampleUserId, "Rapor hazırla", TaskPriority.Critical, SampleCreatedAt);
-        source.AssignToDate(AssignedDay.AddDays(-1)); // geçmiş güne atanmış, tamamlanmamış
+            Guid.NewGuid(), SampleUserId, "Rapor hazırla", TaskPriority.Critical, SampleSortOrder, SampleCreatedAt);
+        source.AssignToDate(AssignedDay.AddDays(-1), SampleSortOrder); // geçmiş güne atanmış, tamamlanmamış
         var newId = Guid.NewGuid();
         var targetDate = AssignedDay;
         var copyCreatedAt = SampleCompletedAt;
 
         // Act
-        var copy = source.CopyToDate(newId, targetDate, copyCreatedAt);
+        var copy = source.CopyToDate(newId, targetDate, SampleSortOrder, copyCreatedAt);
 
         // Assert
         copy.Id.Should().Be(newId);
@@ -495,11 +722,11 @@ public class PlanningTaskTests
         var source = CreateSampleTask();
         var sourceDate = AssignedDay.AddDays(-1);
         var reminderTime = new TimeOnly(9, 0);
-        source.AssignToDate(sourceDate);
+        source.AssignToDate(sourceDate, SampleSortOrder);
         source.SetReminder(reminderTime);
 
         // Act
-        var copy = source.CopyToDate(Guid.NewGuid(), AssignedDay, SampleCompletedAt);
+        var copy = source.CopyToDate(Guid.NewGuid(), AssignedDay, SampleSortOrder, SampleCompletedAt);
 
         // Assert
         copy.ReminderTime.Should().BeNull();
@@ -517,22 +744,127 @@ public class PlanningTaskTests
         var task = CreateCompletedTask();
 
         // Act
-        var act = () => task.CopyToDate(Guid.NewGuid(), AssignedDay.AddDays(1), SampleCompletedAt);
+        var act = () => task.CopyToDate(Guid.NewGuid(), AssignedDay.AddDays(1), SampleSortOrder, SampleCompletedAt);
 
         // Assert
         act.Should().Throw<DomainException>()
             .WithMessage("Tamamlanmış bir görev kopyalanamaz.");
     }
 
+    [Fact]
+    public void CopyToDate_OnTaskWithFocusColor_CopiesFocusColor()
+    {
+        // Arrange
+        var source = CreateAssignedTask(AssignedDay.AddDays(-1));
+        source.SetFocusColor(FocusColor.Orange);
+
+        // Act
+        var copy = source.CopyToDate(Guid.NewGuid(), AssignedDay, SampleSortOrder, SampleCompletedAt);
+
+        // Assert
+        copy.FocusColor.Should().Be(FocusColor.Orange);
+        source.FocusColor.Should().Be(FocusColor.Orange);
+    }
+
+    [Fact]
+    public void CopyToDate_WithGivenSortOrder_UsesGivenSortOrderForCopy()
+    {
+        // Arrange
+        var source = CreateAssignedTask(AssignedDay.AddDays(-1)); // SortOrder: SampleSortOrder
+
+        // Act
+        var copy = source.CopyToDate(Guid.NewGuid(), AssignedDay, OtherSortOrder, SampleCompletedAt);
+
+        // Assert
+        copy.SortOrder.Should().Be(OtherSortOrder);
+        source.SortOrder.Should().Be(SampleSortOrder);
+    }
+
+    [Theory]
+    [MemberData(nameof(NonFiniteSortOrders))]
+    public void CopyToDate_WithNonFiniteSortOrder_ThrowsDomainException(double invalidSortOrder)
+    {
+        // Arrange
+        var source = CreateAssignedTask(AssignedDay.AddDays(-1));
+
+        // Act
+        var act = () => source.CopyToDate(Guid.NewGuid(), AssignedDay, invalidSortOrder, SampleCompletedAt);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage(InvalidSortOrderMessage);
+    }
+
+    // ---- Delete ----
+
+    [Fact]
+    public void Delete_OnActiveTask_SetsDeletedFlags()
+    {
+        // Arrange
+        var task = CreateAssignedTask(AssignedDay);
+
+        // Act
+        task.Delete(SampleDeletedAt);
+
+        // Assert
+        task.IsDeleted.Should().BeTrue();
+        task.DeletedAt.Should().Be(SampleDeletedAt);
+    }
+
+    [Fact]
+    public void Delete_OnAlreadyDeletedTask_ThrowsDomainException()
+    {
+        // Arrange
+        var task = CreateDeletedTask();
+
+        // Act
+        var act = () => task.Delete(SampleDeletedAt.AddHours(1));
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Görev zaten silinmiş.");
+        task.DeletedAt.Should().Be(SampleDeletedAt);
+    }
+
+    [Fact]
+    public void Delete_OnCompletedTask_SetsDeletedFlags()
+    {
+        // Arrange
+        var task = CreateCompletedTask();
+
+        // Act
+        task.Delete(SampleDeletedAt);
+
+        // Assert
+        task.IsDeleted.Should().BeTrue();
+        task.DeletedAt.Should().Be(SampleDeletedAt);
+        task.IsCompleted.Should().BeTrue();
+    }
+
+    [Theory]
+    [MemberData(nameof(DeletedTaskOperations))]
+    public void Operation_OnDeletedTask_ThrowsDomainException(string operationName, Action<PlanningTask> operation)
+    {
+        // Arrange
+        var task = CreateDeletedTask();
+
+        // Act
+        var act = () => operation(task);
+
+        // Assert
+        act.Should().Throw<DomainException>(because: operationName)
+            .WithMessage(DeletedTaskMessage);
+    }
+
     // ---- Test Helpers ----
 
     private static PlanningTask CreateSampleTask()
-        => PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "Örnek görev", TaskPriority.Normal, SampleCreatedAt);
+        => PlanningTask.CreateInPool(Guid.NewGuid(), SampleUserId, "Örnek görev", TaskPriority.Normal, SampleSortOrder, SampleCreatedAt);
 
     private static PlanningTask CreateAssignedTask(DateOnly date)
     {
         var task = CreateSampleTask();
-        task.AssignToDate(date);
+        task.AssignToDate(date, SampleSortOrder);
         return task;
     }
 
@@ -540,6 +872,13 @@ public class PlanningTaskTests
     {
         var task = CreateAssignedTask(AssignedDay);
         task.Complete(SampleCompletedAt);
+        return task;
+    }
+
+    private static PlanningTask CreateDeletedTask()
+    {
+        var task = CreateAssignedTask(AssignedDay);
+        task.Delete(SampleDeletedAt);
         return task;
     }
 }

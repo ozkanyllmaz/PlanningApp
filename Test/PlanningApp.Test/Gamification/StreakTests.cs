@@ -310,6 +310,148 @@ public class StreakTests
             .WithMessage("Değerlendirilmiş bir günün görev durumu değiştirilemez.");
     }
 
+    // ---- EvaluateEmptyDay ----
+
+    [Fact]
+    public void EvaluateEmptyDay_ForFirstTwoConsecutiveEmptyDays_KeepsStreakWithoutIncreasing()
+    {
+        // Arrange
+        var streak = CreateStreakWithCurrentValue(3);
+
+        // Act
+        streak.EvaluateEmptyDay(NextDayAfter(3));
+        streak.EvaluateEmptyDay(NextDayAfter(3).AddDays(1));
+
+        // Assert
+        streak.CurrentStreak.Should().Be(3);
+        streak.ConsecutiveEmptyDays.Should().Be(2);
+        streak.LastEvaluatedDate.Should().Be(NextDayAfter(3).AddDays(1));
+    }
+
+    [Fact]
+    public void EvaluateEmptyDay_ForThirdConsecutiveEmptyDay_ResetsStreak()
+    {
+        // Arrange
+        var streak = CreateStreakWithCurrentValue(3);
+        streak.EvaluateEmptyDay(NextDayAfter(3));
+        streak.EvaluateEmptyDay(NextDayAfter(3).AddDays(1));
+
+        // Act
+        streak.EvaluateEmptyDay(NextDayAfter(3).AddDays(2));
+
+        // Assert
+        streak.CurrentStreak.Should().Be(0);
+    }
+
+    [Fact]
+    public void EvaluateEmptyDay_AfterSuccessfulTaskDay_ResetsConsecutiveEmptyDayCounter()
+    {
+        // Arrange
+        var streak = CreateStreakWithCurrentValue(3);
+        var firstEmptyDay = NextDayAfter(3);
+
+        // Act
+        streak.EvaluateEmptyDay(firstEmptyDay);
+        streak.EvaluateEmptyDay(firstEmptyDay.AddDays(1));
+        streak.EvaluateDay(100m, firstEmptyDay.AddDays(2)); // görevli ve başarılı gün
+        var counterAfterTaskDay = streak.ConsecutiveEmptyDays;
+        streak.EvaluateEmptyDay(firstEmptyDay.AddDays(3));
+        streak.EvaluateEmptyDay(firstEmptyDay.AddDays(4));
+
+        // Assert
+        counterAfterTaskDay.Should().Be(0);
+        streak.CurrentStreak.Should().Be(4); // 3 + görevli gün, boş günler seriyi sıfırlamadı
+        streak.ConsecutiveEmptyDays.Should().Be(2);
+    }
+
+    [Fact]
+    public void EvaluateEmptyDay_AfterFailedTaskDay_ResetsConsecutiveEmptyDayCounter()
+    {
+        // Arrange
+        var streak = CreateStreakWithCurrentValue(3);
+        streak.GrantFreeze(1); // başarısız gün seriyi sıfırlamasın, sadece sayaç davranışı ölçülsün
+        var firstEmptyDay = NextDayAfter(3);
+
+        // Act
+        streak.EvaluateEmptyDay(firstEmptyDay);
+        streak.EvaluateEmptyDay(firstEmptyDay.AddDays(1));
+        streak.EvaluateDay(10m, firstEmptyDay.AddDays(2)); // görevli ama başarısız gün
+        var counterAfterTaskDay = streak.ConsecutiveEmptyDays;
+        streak.EvaluateEmptyDay(firstEmptyDay.AddDays(3));
+        streak.EvaluateEmptyDay(firstEmptyDay.AddDays(4));
+
+        // Assert
+        counterAfterTaskDay.Should().Be(0);
+        streak.CurrentStreak.Should().Be(3);
+        streak.ConsecutiveEmptyDays.Should().Be(2);
+    }
+
+    [Fact]
+    public void EvaluateEmptyDay_WithAvailableFreeze_DoesNotConsumeFreeze()
+    {
+        // Arrange
+        var streak = CreateStreakWithCurrentValue(3);
+        streak.GrantFreeze(2);
+
+        // Act
+        streak.EvaluateEmptyDay(NextDayAfter(3));
+
+        // Assert
+        streak.AvailableFreezes.Should().Be(2);
+        streak.CurrentStreak.Should().Be(3);
+    }
+
+    [Fact]
+    public void EvaluateEmptyDay_OnLastEvaluatedDate_ThrowsDomainException()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateEmptyDay(StartDate);
+
+        // Act
+        var act = () => streak.EvaluateEmptyDay(StartDate);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Bu gün için değerlendirme zaten yapılmış veya geçmişe dönük bir tarih verildi.");
+        streak.ConsecutiveEmptyDays.Should().Be(1);
+    }
+
+    [Fact]
+    public void EvaluateEmptyDay_WithPastDate_ThrowsDomainException()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateEmptyDay(StartDate.AddDays(5));
+
+        // Act
+        var act = () => streak.EvaluateEmptyDay(StartDate);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage("Bu gün için değerlendirme zaten yapılmış veya geçmişe dönük bir tarih verildi.");
+        streak.ConsecutiveEmptyDays.Should().Be(1);
+        streak.LastEvaluatedDate.Should().Be(StartDate.AddDays(5));
+    }
+
+    [Fact]
+    public void EvaluateEmptyDay_DoesNotChangeLongestStreak()
+    {
+        // Arrange
+        var streak = CreateStreakWithCurrentValue(4);
+
+        // Act
+        streak.EvaluateEmptyDay(NextDayAfter(4));
+        var longestAfterFirstEmptyDay = streak.LongestStreak;
+        streak.EvaluateEmptyDay(NextDayAfter(4).AddDays(1));
+        streak.EvaluateEmptyDay(NextDayAfter(4).AddDays(2)); // üçüncü boş gün seriyi sıfırlar
+
+        // Assert
+        longestAfterFirstEmptyDay.Should().Be(4);
+        streak.CurrentStreak.Should().Be(0);
+        streak.LongestStreak.Should().Be(4);
+    }
+
     // ---- Test Helpers ----
 
     private static Streak CreateSampleStreak()
