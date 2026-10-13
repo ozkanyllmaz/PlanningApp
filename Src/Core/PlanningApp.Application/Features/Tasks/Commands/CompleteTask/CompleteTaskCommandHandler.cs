@@ -1,5 +1,6 @@
 using System;
 using MediatR;
+using PlanningApp.Application.Common.Exceptions;
 using PlanningApp.Application.Common.Interfaces;
 using PlanningApp.Application.Common.Interfaces.Repositories;
 using PlanningApp.Domain.Tasks;
