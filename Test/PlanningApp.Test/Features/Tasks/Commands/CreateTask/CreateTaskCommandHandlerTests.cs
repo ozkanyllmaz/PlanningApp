@@ -13,6 +13,9 @@ public class CreateTaskCommandHandlerTests
     // Sabit bir kullanıcı kimliği; testlerin rastgele değerlere bağımlı olmaması için
     private static readonly Guid SampleUserId = new("11111111-1111-1111-1111-111111111111");
 
+    // Sabit bir sıralama değeri; testlerin rastgele değerlere bağımlı olmaması için
+    private const double SampleSortOrder = 1000d;
+
     // Sabit bir an; testlerin sistem saatine bağımlı olmaması için
     private static readonly DateTimeOffset CreatedAt = new(2026, 1, 5, 9, 0, 0, TimeSpan.Zero);
 
@@ -98,7 +101,7 @@ public class CreateTaskCommandHandlerTests
         // Arrange
         var command = CreateSampleCommand();
         var existingTask = PlanningTask.CreateInPool(
-            command.Id, SampleUserId, "Mevcut görev", TaskPriority.Normal, CreatedAt);
+            command.Id, SampleUserId, "Mevcut görev", TaskPriority.Normal, SampleSortOrder, CreatedAt);
 
         _taskRepository
             .Setup(repository => repository.GetByIdAsync(SampleUserId, command.Id, It.IsAny<CancellationToken>()))
@@ -118,5 +121,5 @@ public class CreateTaskCommandHandlerTests
     // ---- Test Helpers ----
 
     private static CreateTaskCommand CreateSampleCommand()
-        => new(Guid.NewGuid(), "Örnek görev", TaskPriority.Important, CreatedAt);
+        => new(Guid.NewGuid(), "Örnek görev", TaskPriority.Important, SampleSortOrder, CreatedAt);
 }

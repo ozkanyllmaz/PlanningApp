@@ -8,6 +8,9 @@ namespace PlanningApp.Test.Features.Tasks.Commands.CreateTask;
 
 public class CreateTaskCommandValidatorTests
 {
+    // Sabit bir sıralama değeri; testlerin rastgele değerlere bağımlı olmaması için
+    private const double SampleSortOrder = 1000d;
+
     // Sabit bir an; testlerin sistem saatine bağımlı olmaması için
     private static readonly DateTimeOffset Now = new(2026, 1, 5, 9, 0, 0, TimeSpan.Zero);
 
@@ -133,6 +136,34 @@ public class CreateTaskCommandValidatorTests
             .Which.PropertyName.Should().Be(nameof(CreateTaskCommand.Priority));
     }
 
+    // ---- SortOrder ----
+
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(1000.5, true)]
+    [InlineData(double.NaN, false)]
+    [InlineData(double.PositiveInfinity, false)]
+    [InlineData(double.NegativeInfinity, false)]
+    public void Validate_WithSortOrder_ReturnsExpectedValidity(double sortOrder, bool expectedValid)
+    {
+        // Arrange
+        var validator = CreateValidator();
+        var command = CreateSampleCommand() with { SortOrder = sortOrder };
+
+        // Act
+        var result = validator.Validate(command);
+
+        // Assert
+        result.IsValid.Should().Be(expectedValid);
+        if (!expectedValid)
+        {
+            result.Errors.Should().ContainSingle()
+                .Which.Should().Match<FluentValidation.Results.ValidationFailure>(error =>
+                    error.PropertyName == nameof(CreateTaskCommand.SortOrder) &&
+                    error.ErrorMessage == "Sıralama değeri geçerli bir sayı olmalıdır.");
+        }
+    }
+
     // ---- CreatedAt ----
 
     [Theory]
@@ -178,5 +209,5 @@ public class CreateTaskCommandValidatorTests
         => new(new FakeTimeProvider(Now));
 
     private static CreateTaskCommand CreateSampleCommand()
-        => new(Guid.NewGuid(), "Örnek görev", TaskPriority.Normal, Now);
+        => new(Guid.NewGuid(), "Örnek görev", TaskPriority.Normal, SampleSortOrder, Now);
 }
