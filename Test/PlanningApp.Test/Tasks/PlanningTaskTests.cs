@@ -641,6 +641,35 @@ public class PlanningTaskTests
             .WithMessage("Tamamlanmamış bir görev geri alınamaz.");
     }
 
+    [Fact]
+    public void Complete_OnAssignedTask_DoesNotChangeSortOrder()
+    {
+        // Arrange
+        var task = CreateAssignedTask(AssignedDay);
+        var sortOrderBefore = task.SortOrder;
+
+        // Act
+        task.Complete(SampleCompletedAt);
+
+        // Assert
+        task.SortOrder.Should().Be(sortOrderBefore);
+    }
+
+    [Fact]
+    public void Uncomplete_AfterComplete_RestoresSameSortOrder()
+    {
+        // Arrange
+        var task = CreateAssignedTask(AssignedDay);
+        var sortOrderBefore = task.SortOrder;
+        task.Complete(SampleCompletedAt);
+
+        // Act
+        task.Uncomplete();
+
+        // Assert
+        task.SortOrder.Should().Be(sortOrderBefore);
+    }
+
     // ---- Rename ----
 
     [Fact]

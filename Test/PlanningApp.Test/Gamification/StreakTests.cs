@@ -251,6 +251,63 @@ public class StreakTests
         streak.AvailableFreezes.Should().Be(0);
     }
 
+    // ---- IsDayEvaluated ----
+
+    [Fact]
+    public void IsDayEvaluated_WithNoEvaluationYet_ReturnsFalse()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+
+        // Act
+        var result = streak.IsDayEvaluated(StartDate);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsDayEvaluated_OnLastEvaluatedDate_ReturnsTrue()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateDay(80m, StartDate);
+
+        // Act
+        var result = streak.IsDayEvaluated(StartDate);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsDayEvaluated_WithDateBeforeLastEvaluatedDate_ReturnsTrue()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateDay(80m, StartDate.AddDays(3));
+
+        // Act
+        var result = streak.IsDayEvaluated(StartDate.AddDays(2));
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsDayEvaluated_WithDateAfterLastEvaluatedDate_ReturnsFalse()
+    {
+        // Arrange
+        var streak = CreateSampleStreak();
+        streak.EvaluateDay(80m, StartDate);
+
+        // Act
+        var result = streak.IsDayEvaluated(StartDate.AddDays(1));
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
     // ---- EnsureDayNotEvaluated ----
 
     [Fact]
