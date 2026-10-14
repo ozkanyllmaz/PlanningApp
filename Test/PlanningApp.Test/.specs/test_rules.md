@@ -45,3 +45,11 @@
   "referans implementasyon" testi varsa (örn. PlanningTaskTests.cs),
   Claude Code'a bu referansla birlikte yazdırılır — sıfırdan elle
   yazılmaz, tekrar eden bir iştir.
+
+## Mimari Testler
+- `Test/PlanningApp.Test/Architecture/` altında, katman sınırlarını ve Domain
+  kurallarını reflection ile doğrulayan testler bulunur (ek paket YOK, sadece xUnit).
+  Spec'teki "Yasaklar" bölümlerinin otomatik karşılığıdır: bir katman başka bir
+  katmana/pakete bağımlı olursa veya Domain'de public setter/public constructor
+  belirirse build kırılır. Yeni bir katman yasağı spec'e yazıldığında karşılığı
+  bu testlere de eklenir.
