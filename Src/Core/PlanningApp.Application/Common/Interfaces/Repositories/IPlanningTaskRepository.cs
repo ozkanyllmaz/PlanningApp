@@ -15,6 +15,12 @@ public interface IPlanningTaskRepository
     // O güne atanmış, silinmemiş görevler; sıralamasızdır (sıralama handler'da yapılır)
     Task<IReadOnlyList<PlanningTask>> GetByDateAsync(Guid userId, DateOnly date, CancellationToken cancellationToken);
 
+    // Havuzdaki (AssignedDate == null), silinmemiş görevler; sıralamasızdır
+    Task<IReadOnlyList<PlanningTask>> GetPoolAsync(Guid userId, CancellationToken cancellationToken);
+
+    // [from, to] aralığındaki (to dahil) güne atanmış, silinmemiş görevler; sıralamasızdır
+    Task<IReadOnlyList<PlanningTask>> GetByDateRangeAsync(Guid userId, DateOnly from, DateOnly to, CancellationToken cancellationToken);
+
     Task AddAsync(PlanningTask task, CancellationToken cancellationToken);
 
 }
