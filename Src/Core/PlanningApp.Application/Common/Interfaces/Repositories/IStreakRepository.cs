@@ -7,4 +7,7 @@ public interface IStreakRepository
 {
     // Kullanıcının tek bir Streak kaydı olur; henüz yoksa null döner
     Task<Streak?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken);
+
+    // İlk değerlendirmede oluşturulan streak kaydını ekler
+    Task AddAsync(Streak streak, CancellationToken cancellationToken);
 }
