@@ -9,8 +9,7 @@
   klasöründe). Use case'ler feature bazlı `Features/` altında, her biri kendi
   klasöründe: `Features/Tasks/Commands/CreateTask/` içinde
   `CreateTaskCommand.cs`, `CreateTaskCommandHandler.cs`,
-  `CreateTaskCommandValidator.cs`. Query'ler için
-  `Features/Weeks/Queries/GetWeeklyPlan/` gibi. Ortak altyapı
+  `CreateTaskCommandValidator.cs`. Query'ler için `Features/Tasks/Queries/GetWeeklyPlan/` gibi (hafta kaydının kendisini ilgilendiren sorgular, örn. arşiv, `Features/Weeks/Queries/` altındadır). Ortak altyapı
   (`Behaviors/`, `Exceptions/`) `Common/` altındadır.
 - İsimlendirme: `CreateTaskCommand`, `AssignTaskToDateCommand`,
   `CompleteTaskCommand`, `UndoTaskCompletionCommand`, `RenameTaskCommand`,
@@ -22,6 +21,22 @@
   DTO'lar kendi feature klasöründe `Dtos/` altında, Query'ye özel olanlar
   Query klasörünün içindedir. Ayrıntılar: docs/specs/TaskManagement.md → Query Kataloğu.
   Altın örnek: `GetDailyPlanQueryHandler`.
+
+## Command Handler Akış Sırası
+Var olan bir kaydı değiştiren Command handler'ları şu sırayı izler
+(altın örnek: `CompleteTaskCommandHandler`):
+1. Kaydı repository'den yükle; bulunamazsa `NotFoundException`.
+2. Idempotency: hedef durum zaten sağlanmışsa hiçbir şeye gitmeden dön.
+3. Gün kilidi: `Streak.EnsureDayNotEvaluated` (streak kaydı yoksa kilit yok).
+4. Domain metodunu çağır.
+5. `SaveChanges` bir kez.
+Hedef gün gerektirenlerde kullanıcının yerel bugünü hesaplanır; hedef gün
+yerel bugünden önceyse `ValidationException` (alan adı `Date`/`TargetDate`).
+
+## Ortak Yardımcılar (kopyalanmaz, tek yerden kullanılır)
+- İstemci zaman damgası kuralı: `Common/Validation/ValidatorExtensions.MustNotBeInFuture`.
+- Ağırlıklı tamamlanma yüzdesi: yalnızca `Common/Helpers/WeightedCompletion`.
+- Hafta başlangıcı: yalnızca `Common/Helpers/WeekCalendar.GetWeekStart`.
 
 ## Kimlik (ID) ve Zaman
 - İstemcinin (mobil, offline) oluşturduğu kayıtlar için ID Command'ın
@@ -50,11 +65,12 @@
 - Bildirim gönderme, hosted service tetikleme gibi işler için de interface
   tanımlanır (örn. `INotificationTrigger`); somut kod Infrastructure'dadır.
 - İş kuralı burada yaşır, Persistence/Infrastructure'da DEĞİL:
-  - Günün ağırlıklı tamamlanma yüzdesini hesaplamak (kullanıcının o güne
+- Günün ağırlıklı tamamlanma yüzdesini hesaplamak (kullanıcının o güne
     atanmış görevlerini çekip `TaskPriority` ağırlıklarıyla) ve sonucu
     `Streak.EvaluateDay()` metoduna vermek.
-  - "Akıllı zaman/öncelik algılama" (metinden parse etme).
-  - Undo penceresi kuralı (henüz kararlaştırılmadı, bkz. TaskManagement.md).
+- "Akıllı zaman/öncelik algılama" (metinden parse etme).
+- Gün kilidi ve undo kuralı: gün değerlendirilmişse görev değiştirilemez
+    (`Streak.EnsureDayNotEvaluated`), bkz. TaskManagement.md.
 - Entity'nin kendi durumunu koruyan kurallar Domain'de kalır, burada
   tekrar yazılmaz.
 - Controller'ların ihtiyaç duyduğu her response şekli burada DTO/Response
@@ -72,10 +88,15 @@
   interface'leri).
 
 ## Test Beklentisi
-- Her Handler için: bir happy-path testi + bir validation-failure testi +
-  başka kullanıcıya ait kayda erişimin reddedildiği bir test
+- Her Handler için: bir happy-path testi + bir validation-failure testi
   (PlanningApp.Test, repository'ler Moq ile mock'lanarak, zaman için
-  `FakeTimeProvider`).
-- Query handler'ları için: `userId`'nin repository çağrısına `ICurrentUserService`'ten
-  geçirildiği, sıralamanın ve DTO eşlemesinin doğru olduğu test edilir. Başka
-  kullanıcının verisinin dönmemesi Persistence integration testinde doğrulanır.
+  `FakeTimeProvider`). Validation testleri Validator sınıfı için ayrı yazılır.
+- Handler, `ICurrentUserService.UserId`'yi repository çağrılarına geçirir;
+  bu, ilgili handler testinde doğrulanır.
+- Var olan bir kaydı değiştiren Command handler'larında ek olarak: kayıt
+  bulunamazsa (başka kullanıcının kaydı da repository'den `null` döner)
+  `NotFoundException` fırlatılır ve `SaveChanges` çağrılmaz; idempotent
+  durumda hata yoktur ve `SaveChanges` çağrılmaz.
+- Query handler'ları için: sıralamanın ve DTO eşlemesinin doğru olduğu test
+  edilir. Başka kullanıcının verisinin dönmemesi Persistence integration
+  testinde doğrulanır.

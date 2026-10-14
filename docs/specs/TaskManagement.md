@@ -17,8 +17,6 @@
   sürükle-bırak özelliği bunu gerektirir.
 - Görev başlığı düzenlenebilir (`Rename()`), ancak tamamlanmış bir görevin
   başlığı değiştirilemez.
-- Tamamlama geri alınabilir (`Uncomplete()` / undo) — ne kadar süre içinde
-  geri alınabileceği HENÜZ KARARLAŞTIRILMADI (aşağıya bkz.).
 - Her görevin bir `Priority` (TaskPriority: Normal/Important/Critical) değeri
   vardır, oluşturulurken zorunlu parametre olarak verilir (varsayılan değer
   YOK — her görev için bilinçli bir seçim yapılmalı).
@@ -95,8 +93,8 @@
 ## İlgili Katmanlar
 - Domain: `PlanningTask` entity (bkz. Tasks/PlanningTask.cs — referans implementasyon),
   `TaskPriority` ve `FocusColor` (Tasks/)
-- Application: tüm görev Command'ları yazıldı (CreateTask, CompleteTask ve
-  Command Kataloğu'ndaki 11 Command); Query'ler ve gün değerlendirmesi henüz yok
+- Application: tüm görev Command'ları ve `GetDailyPlan` sorgusu yazıldı;
+  `GetPool`, `GetWeeklyPlan` ve gün değerlendirmesi henüz yok
 - Persistence: (henüz yok)
 - WebApi: (henüz yok)
 
@@ -185,7 +183,6 @@ Ortak kurallar (tüm Query'ler için):
 | GetWeeklyPlan | Date (haftanın herhangi bir günü) | 7 günlük `DailyPlanDto` listesi | Hafta Pazartesi başlar (`WeekCalendar.GetWeekStart`). Görevler `GetByDateRangeAsync` ile TEK sorguda çekilir, handler güne göre gruplar; her gün için `IsLocked` ve yüzde ayrı hesaplanır. Görevi olmayan gün boş liste ve null yüzdeyle döner (7 gün her zaman vardır) |
 
 Repository sözleşmeleri:
-- `IPlanningTaskRepository.GetPoolAsync(userId, ct)` ve
-  `GetByDateRangeAsync(userId, from, to, ct)` (her ikisi de silinmemiş
-  görevleri, sıralamasız döner; `to` dahildir).
-- Sonraki partide: `GetPoolAsync(userId, ct)`, `GetByDateRangeAsync(userId, from, to, ct)`.
+- `IPlanningTaskRepository.GetByDateAsync(userId, date, ct)` (yazıldı),
+  `GetPoolAsync(userId, ct)` ve `GetByDateRangeAsync(userId, from, to, ct)`
+  (hepsi silinmemiş görevleri, sıralamasız döner; `to` dahildir).

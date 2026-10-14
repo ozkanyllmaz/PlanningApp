@@ -37,6 +37,12 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
 - Karışık dil kullanımı (örn. `GorevOlustur` gibi Türkçe-İngilizce karışık
   isimlendirme) KABUL EDİLMEZ.
 
+## Çalışma Biçimi
+- Dosyaları Write ve Edit araçlarıyla oluştur ve düzenle; betikle (Python vb.) toplu üretme.
+- Derleme hatalarını `.csproj`'a global `Using` ekleyerek çözme; ilgili dosyaya açık `using` ekle.
+- "Altın örnek" olarak işaretlenen dosyalara istenmedikçe dokunma.
+- Bitirmeden `dotnet build` ve `dotnet test` çalıştır.
+
 ## Test Kütüphaneleri ve Katmanlaşma
 - Unit testler: `Test/PlanningApp.Test`
   - Referanslar: SADECE PlanningApp.Domain, PlanningApp.Application
