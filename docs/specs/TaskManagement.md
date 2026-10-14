@@ -63,6 +63,9 @@
   sıralama). Domain yalnızca değerin geçerli (sonlu) bir sayı olduğunu doğrular.
   Eşit değerlerde sıra `CreatedAt`, sonra `Id` ile belirlenir (cihazlar arası
   tutarlılık için).
+- Tamamlama ve geri alma `SortOrder`'ı DEĞİŞTİRMEZ. Tamamlananların listede
+  alta düşmesi istemcide görsel bir işlemdir; tamamlama tiki kaldırılınca
+  görev kendi `SortOrder` değerine göre eski sırasına döner.
 
 ## Henüz Kararlaştırılmadı (TODO)
 - [x] Undo penceresi: sınırsız mı, süre sınırlı mı (örn. 5 dk)?
@@ -147,3 +150,37 @@ gelen "oluştur" isteği birincil anahtar çakışması yaratmasın).
   unique index çakışması Persistence'ta nasıl yönetilecek (mevcut kaydı kullanma)?
 - [ ] Gün kilidi `Rename`, `ChangeTaskPriority` gibi küçük değişiklikleri de
   kapsıyor (basitlik için). Gevşetilip gevşetilmeyeceği ürün kararıyla netleşir.
+
+## Query Kataloğu (Application)
+
+Ortak kurallar (tüm Query'ler için):
+- Query'ler durum DEĞİŞTİRMEZ: `IUnitOfWork` kullanmaz, `SaveChanges` çağırmaz,
+  entity metotlarını çağırmaz. Entity'leri DTO'ya çevirip döner; entity dışarı sızmaz.
+- Kullanıcı kimliği `ICurrentUserService`'ten alınır. Repository `userId` ile
+  filtreler ve silinmiş görevleri (`IsDeleted`) döndürmez. Başka kullanıcının
+  verisi boş sonuç gibi davranır, hata verilmez.
+- Sıralama repository'de değil handler'da yapılır (birim testle doğrulanabilsin):
+  `SortOrder`, sonra `CreatedAt`, sonra `Id` (hepsi artan).
+- Ortak görev DTO'su `TaskDto` (Features/Tasks/Dtos/): Id, Title, Priority,
+  FocusColor?, SortOrder, IsCompleted, AssignedDate?, ReminderTime?, CreatedAt,
+  CompletedAt?. Tamamlananları alta almak istemcinin işidir, sunucu sıralamayı bozmaz.
+- Günün ağırlıklı tamamlanma yüzdesi tek yerde hesaplanır:
+  `Common/Helpers/WeightedCompletion.Calculate(IEnumerable<PlanningTask>)`
+  → `decimal?`. Kural (Gamification.md ile aynı): ağırlık `(int)Priority`
+  (1/2/3); yüzde = tamamlananların ağırlık toplamı / tüm görevlerin ağırlık
+  toplamı × 100, 2 ondalığa yuvarlanır (`MidpointRounding.AwayFromZero`).
+  Görev yoksa `null` döner (0 değil). Gün değerlendirmesi (EvaluateUserDay)
+  da aynı yardımcıyı kullanır, iki yerde farklı sonuç çıkmamalı.
+- Gün kilidi: `IsLocked`, kullanıcının streak kaydına göre o gün değerlendirilmişse
+  true; streak kaydı yoksa false (`Streak.IsDayEvaluated(date)`).
+
+| Query | Girdi | Dönen | Notlar |
+|---|---|---|---|
+| GetDailyPlan | Date | `DailyPlanDto(Date, IsLocked, WeightedCompletionPercentage?, Tasks)` | O güne atanmış (`AssignedDate == Date`) silinmemiş görevler; geçmiş günler de sorgulanabilir (arşiv görünümü). Boş gün: boş liste, yüzde null |
+| GetPool | — | `IReadOnlyList<TaskDto>` | Havuzdaki (`AssignedDate == null`) silinmemiş görevler (sonraki parti) |
+| GetWeeklyPlan | Date (haftanın herhangi bir günü) | 7 günlük `DailyPlanDto` listesi | Hafta Pazartesi başlar; `WeekCalendar` kullanılır (sonraki parti) |
+
+Repository sözleşmeleri:
+- `IPlanningTaskRepository.GetByDateAsync(userId, date, ct)` → `IReadOnlyList<PlanningTask>`
+  (silinmemiş, o güne atanmış, sıralamasız).
+- Sonraki partide: `GetPoolAsync(userId, ct)`, `GetByDateRangeAsync(userId, from, to, ct)`.

@@ -18,6 +18,9 @@
 - Her Command/Query için bir `Validator` (FluentValidation) yazılır ve
   MediatR pipeline behavior'ı üzerinden otomatik tetiklenir. Handler içine
   manuel validation kodu YAZILMAZ.
+- Query'ler durum değiştirmez (`IUnitOfWork` yok), entity döndürmez, DTO döner.
+  DTO'lar kendi feature klasöründe `Dtos/` altında, Query'ye özel olanlar
+  Query klasörünün içindedir. Ayrıntılar: docs/specs/TaskManagement.md → Query Kataloğu.
 
 ## Kimlik (ID) ve Zaman
 - İstemcinin (mobil, offline) oluşturduğu kayıtlar için ID Command'ın
