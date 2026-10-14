@@ -1,6 +1,6 @@
 # Gamification — Özellik Spesifikasyonu
 
-## Durum: Taslak (Domain tasarımı sürüyor)
+## Durum: Domain ve Application tamamlandı; Persistence ve Infrastructure bekliyor
 
 ## Kesinleşen Kurallar
 - `Streak` kullanıcı bazlıdır (`UserId` alanı taşır), MVP'de tek kullanıcı
@@ -27,9 +27,10 @@
 - Günlük değerlendirme idempotent olmalıdır: aynı gün için `EvaluateDay()`
   iki kez çağrılamaz (örn. Hosted Service yanlışlıkla iki kez tetiklenirse).
   Bu, `LastEvaluatedDate` alanıyla Domain seviyesinde garanti altına alınır.
-- "Gün sonu", kullanıcının saat dilimine göre yerel 00:00'dır (`UserProfile`'daki
-  IANA saat dilimi). Sunucu "hangi yerel gün bitti" kararını Application'da verir;
-  Streak.EvaluateDay'e sadece sonuç gelir.
+- Bir günün sonu, kullanıcının saat dilimine göre yerel 00:00'dır (`UserProfile`'daki
+  IANA saat dilimi); ancak günün DEĞERLENDİRMESİ bekleme süresi nedeniyle ertesi gün
+  yerel 06:00'da yapılır (aşağıya bkz.). Sunucu "hangi yerel gün değerlendirilebilir"
+  kararını Application'da verir; `Streak`'e sadece sonuç gelir.
 - Hiç (silinmemiş) görevi olmayan gün "boş gün"dür: seriyi artırmaz.
   Ardışık en fazla 2 boş güne izin verilir (seri korunur); 3. ardışık boş
   günde seri sıfırlanır. Görevi olan herhangi bir gün (başarılı veya
@@ -63,9 +64,10 @@
   v2.0'da ayrıca tasarlanacak, bu dosyaya o zaman bağlanacak.
 - [ ] `%70` eşiği sabit mi kalacak, yoksa ileride kullanıcı tarafından
   ayarlanabilir mi olacak?
-- [ ] `EvaluateDay()`'i kim, ne zaman tetikler? (Muhtemelen Infrastructure'daki
-  bir Hosted Service, her gün gece yarısı — Infrastructure katmanına
-  geçildiğinde netleştirilecek.)
+- [ ] `EvaluateUserDaysCommand`'ı kim, ne zaman tetikler? (Infrastructure'daki bir
+  Hosted Service. Hangi kullanıcıların değerlendirilecek günü olduğunu nasıl bulacağı
+  ve tetikleme sıklığı (öneri: saatlik, her çalışmada bekleme süresi dolmuş
+  kullanıcılar) Infrastructure aşamasında netleşecek.)
 - [x] Gün sonu değerlendirmesi ile offline'da gecikmeli senkronize edilen
   tamamlamalar: kullanıcı 23:50'de offline tamamlayıp ertesi gün senkronize
   ederse, değerlendirme o tamamlamayı görmeden çalışmış olabilir. Bir
@@ -84,7 +86,8 @@
 ## İlgili Katmanlar
 - Domain: `Streak` entity (bkz. Gamification/Streak.cs), `TaskPriority` enum
   (bkz. Tasks/TaskPriority.cs)
-- Application: Günlük ağırlıklı puan hesaplama mantığı (henüz yazılmadı)
+- Application: `EvaluateUserDaysCommand` (Features/Gamification/) ve
+  `WeightedCompletion` (Common/Helpers/) yazıldı
 - Persistence: (henüz yok)
 - Infrastructure: Günlük değerlendirmeyi tetikleyen Hosted Service (henüz yok)
 - WebApi: (henüz yok)
