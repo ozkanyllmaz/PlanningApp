@@ -58,6 +58,11 @@ yerel bugünden önceyse `ValidationException` (alan adı `Date`/`TargetDate`).
 - Repository sorguları her zaman `UserId` ile filtrelenir. Başka bir
   kullanıcıya ait kayıt, "bulunamadı" olarak davranılır (kaydın var
   olduğu bilgisi sızdırılmaz).
+- İstisna (sistem Command'ları): arka plan servisinin tetiklediği Command'lar
+  (örn. `EvaluateUserDaysCommand`) oturum olmadığı için `UserId`'yi Command
+  içinde taşır. Bunlara HİÇBİR HTTP endpoint'i açılmaz; yalnızca
+  Infrastructure'daki arka plan servisleri gönderir. Handler
+  `ICurrentUserService` kullanmaz.
 
 ## Sorumluluk Sınırı
 - Bu katman `IPlanningTaskRepository`, `IPlanningWeekRepository`,

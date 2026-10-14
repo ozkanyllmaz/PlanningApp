@@ -38,6 +38,23 @@
 - Application her günü (boş olanlar dahil) kullanıcının yerel gün sırasına
   göre değerlendirir: görevi olan gün → `EvaluateDay`, boş gün →
   `EvaluateEmptyDay`. Gün atlanmaz; atlanırsa tarih sırası kontrolü hata verir.
+- Gün değerlendirmesi `EvaluateUserDaysCommand` ile yapılır (Application,
+  Features/Gamification/). Bir gün, kullanıcının yerel saatiyle ertesi gün
+  06:00'da değerlendirilebilir hale gelir (bekleme süresi 6 saat, sabit:
+  `DayEvaluationRules.GracePeriod`). Amaç: gece yarısına yakın offline
+  yapılıp gecikmeli senkronize edilen tamamlamalar gün kilitlenmeden işlensin.
+  Değerlendirilebilir son gün = `UserProfile.GetLocalDate(şimdi - 6 saat) - 1 gün`.
+- Başlangıç günü: streak kaydı varsa `LastEvaluatedDate + 1`; kayıt yoksa
+  (veya hiç değerlendirme yapılmamışsa) kullanıcının kayıt gününün yerel tarihi.
+- Tek çalıştırmada başlangıçtan son değerlendirilebilir güne kadar TÜM günler
+  sırayla değerlendirilir (kullanıcı günlerce uygulamayı açmasa da atlanan
+  günler doldurulur): görevi olan gün → `EvaluateDay` (ağırlıklı yüzde),
+  görevi olmayan gün → `EvaluateEmptyDay`. Silinmiş görevler sayılmaz.
+  Görevler tek aralık sorgusuyla çekilir.
+- Streak kaydı ilk değerlendirmede yoksa oluşturulur. Değerlendirilecek gün
+  yoksa hiçbir şey yazılmaz ve görev sorgusuna gidilmez (idempotent).
+- Sonuç: değerlendirilen gün sayısı ve güncel seri değerleri (bildirimler
+  için, bkz. Notifications.md).
 
 ## Henüz Kararlaştırılmadı (TODO)
 - [ ] `AvailableFreezes` nasıl kazanılır? (Elmas harcama, Premium üyelik,
@@ -49,13 +66,20 @@
 - [ ] `EvaluateDay()`'i kim, ne zaman tetikler? (Muhtemelen Infrastructure'daki
   bir Hosted Service, her gün gece yarısı — Infrastructure katmanına
   geçildiğinde netleştirilecek.)
-- [ ] Gün sonu değerlendirmesi ile offline'da gecikmeli senkronize edilen
+- [x] Gün sonu değerlendirmesi ile offline'da gecikmeli senkronize edilen
   tamamlamalar: kullanıcı 23:50'de offline tamamlayıp ertesi gün senkronize
   ederse, değerlendirme o tamamlamayı görmeden çalışmış olabilir. Bir
   bekleme süresi (grace period) gerekebilir. Infrastructure'da
   değerlendirme tetiklenirken karar verilecek.
 - [ ] Maskot tepkileri (hangi eyleme hangi tepki), günlük özlü sözlerin kaynağı.
 - [ ] Zamanlı akıllı bildirimlerin kuralları (Infrastructure'a geçerken).
+- [ ] `Streak` için eşzamanlılık: aynı kullanıcı için iki değerlendirme aynı
+  anda çalışırsa (iki sunucu örneği, üst üste binen zamanlayıcı) çakışma olur.
+  Persistence'ta Streak'e satır sürümü (optimistic concurrency token) eklenecek;
+  çakışmada işlem atlanır, bir sonraki turda tekrar denenir.
+- [ ] Gün sonucu (başarılı/başarısız/dondurulmuş) özet bildiriminde gerekirse
+  `Streak.EvaluateDay` bir sonuç tipi dönmeli (Domain değişikliği, bildirim
+  tasarımıyla birlikte karar verilecek).
 
 ## İlgili Katmanlar
 - Domain: `Streak` entity (bkz. Gamification/Streak.cs), `TaskPriority` enum
