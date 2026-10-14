@@ -93,8 +93,8 @@
 ## İlgili Katmanlar
 - Domain: `PlanningTask` entity (bkz. Tasks/PlanningTask.cs — referans implementasyon),
   `TaskPriority` ve `FocusColor` (Tasks/)
-- Application: tüm görev Command'ları ve `GetDailyPlan` sorgusu yazıldı;
-  `GetPool`, `GetWeeklyPlan` ve gün değerlendirmesi henüz yok
+- Application: tüm görev Command'ları ve Query'leri yazıldı (GetDailyPlan altın
+  örnek, GetPool, GetWeeklyPlan); gün değerlendirmesi henüz yok
 - Persistence: (henüz yok)
 - WebApi: (henüz yok)
 
@@ -179,7 +179,7 @@ Ortak kurallar (tüm Query'ler için):
 | Query | Girdi | Dönen | Notlar |
 |---|---|---|---|
 | GetDailyPlan | Date | `DailyPlanDto(Date, IsLocked, WeightedCompletionPercentage?, Tasks)` | O güne atanmış (`AssignedDate == Date`) silinmemiş görevler; geçmiş günler de sorgulanabilir (arşiv görünümü). Boş gün: boş liste, yüzde null |
-| GetPool | — | `IReadOnlyList<TaskDto>` | Havuzdaki (`AssignedDate == null`) silinmemiş görevler (sonraki parti) |
+| GetPool | — | `IReadOnlyList<TaskDto>` | Havuzdaki (`AssignedDate == null`) silinmemiş görevler |
 | GetWeeklyPlan | Date (haftanın herhangi bir günü) | 7 günlük `DailyPlanDto` listesi | Hafta Pazartesi başlar (`WeekCalendar.GetWeekStart`). Görevler `GetByDateRangeAsync` ile TEK sorguda çekilir, handler güne göre gruplar; her gün için `IsLocked` ve yüzde ayrı hesaplanır. Görevi olmayan gün boş liste ve null yüzdeyle döner (7 gün her zaman vardır) |
 
 Repository sözleşmeleri:

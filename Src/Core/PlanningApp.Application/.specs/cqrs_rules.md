@@ -14,7 +14,8 @@
 - İsimlendirme: `CreateTaskCommand`, `AssignTaskToDateCommand`,
   `CompleteTaskCommand`, `UndoTaskCompletionCommand`, `RenameTaskCommand`,
   `GetWeeklyPlanQuery`, `GetDailyPlanQuery`, `GetArchivedWeeksQuery`.
-- Her Command/Query için bir `Validator` (FluentValidation) yazılır ve
+- Girdisi olan her Command/Query için bir `Validator` (FluentValidation) yazılır
+  (girdisiz Query'ler, örn. `GetPool`, validator'sızdır) ve
   MediatR pipeline behavior'ı üzerinden otomatik tetiklenir. Handler içine
   manuel validation kodu YAZILMAZ.
 - Query'ler durum değiştirmez (`IUnitOfWork` yok), entity döndürmez, DTO döner.
