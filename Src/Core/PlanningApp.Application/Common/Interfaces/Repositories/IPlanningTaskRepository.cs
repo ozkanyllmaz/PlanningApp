@@ -12,6 +12,9 @@ public interface IPlanningTaskRepository
     // Sorgu yine UserId ile filtrelenir.
     Task<PlanningTask?> GetByIdIncludingDeletedAsync(Guid userId, Guid id, CancellationToken cancellationToken);
 
+    // O güne atanmış, silinmemiş görevler; sıralamasızdır (sıralama handler'da yapılır)
+    Task<IReadOnlyList<PlanningTask>> GetByDateAsync(Guid userId, DateOnly date, CancellationToken cancellationToken);
+
     Task AddAsync(PlanningTask task, CancellationToken cancellationToken);
 
 }
