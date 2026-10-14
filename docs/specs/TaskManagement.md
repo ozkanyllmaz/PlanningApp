@@ -87,6 +87,10 @@
 - [x] Repository `GetByIdAsync` silinmiş kayıtları DÖNDÜRMEZ (başkasının/silinmiş
   kayıt "bulunamadı" davranışı). Idempotent `DeleteTask` için silinmiş kaydı da
   görebilen ayrı bir sorgu gerekecek; DeleteTask yazılırken netleştirilecek. Çözüm: GetByIdIncludingDeletedAsync, bkz. Command Kataloğu.
+- [ ] Sıralamada son eşitlik bozucu `Id` (Guid): sunucu ve istemci aynı
+  karşılaştırmayı kullanmalı, yoksa nadir eşitlik durumunda iki cihazda sıra
+  farklı çıkar. Mobil aşamasında netleştirilecek (örn. küçük harfli string
+  üzerinde ordinal karşılaştırma).
 
 ## İlgili Katmanlar
 - Domain: `PlanningTask` entity (bkz. Tasks/PlanningTask.cs — referans implementasyon),
@@ -178,9 +182,10 @@ Ortak kurallar (tüm Query'ler için):
 |---|---|---|---|
 | GetDailyPlan | Date | `DailyPlanDto(Date, IsLocked, WeightedCompletionPercentage?, Tasks)` | O güne atanmış (`AssignedDate == Date`) silinmemiş görevler; geçmiş günler de sorgulanabilir (arşiv görünümü). Boş gün: boş liste, yüzde null |
 | GetPool | — | `IReadOnlyList<TaskDto>` | Havuzdaki (`AssignedDate == null`) silinmemiş görevler (sonraki parti) |
-| GetWeeklyPlan | Date (haftanın herhangi bir günü) | 7 günlük `DailyPlanDto` listesi | Hafta Pazartesi başlar; `WeekCalendar` kullanılır (sonraki parti) |
+| GetWeeklyPlan | Date (haftanın herhangi bir günü) | 7 günlük `DailyPlanDto` listesi | Hafta Pazartesi başlar (`WeekCalendar.GetWeekStart`). Görevler `GetByDateRangeAsync` ile TEK sorguda çekilir, handler güne göre gruplar; her gün için `IsLocked` ve yüzde ayrı hesaplanır. Görevi olmayan gün boş liste ve null yüzdeyle döner (7 gün her zaman vardır) |
 
 Repository sözleşmeleri:
-- `IPlanningTaskRepository.GetByDateAsync(userId, date, ct)` → `IReadOnlyList<PlanningTask>`
-  (silinmemiş, o güne atanmış, sıralamasız).
+- `IPlanningTaskRepository.GetPoolAsync(userId, ct)` ve
+  `GetByDateRangeAsync(userId, from, to, ct)` (her ikisi de silinmemiş
+  görevleri, sıralamasız döner; `to` dahildir).
 - Sonraki partide: `GetPoolAsync(userId, ct)`, `GetByDateRangeAsync(userId, from, to, ct)`.

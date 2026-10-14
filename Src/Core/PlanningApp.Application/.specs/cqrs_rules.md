@@ -21,6 +21,7 @@
 - Query'ler durum değiştirmez (`IUnitOfWork` yok), entity döndürmez, DTO döner.
   DTO'lar kendi feature klasöründe `Dtos/` altında, Query'ye özel olanlar
   Query klasörünün içindedir. Ayrıntılar: docs/specs/TaskManagement.md → Query Kataloğu.
+  Altın örnek: `GetDailyPlanQueryHandler`.
 
 ## Kimlik (ID) ve Zaman
 - İstemcinin (mobil, offline) oluşturduğu kayıtlar için ID Command'ın
@@ -75,3 +76,6 @@
   başka kullanıcıya ait kayda erişimin reddedildiği bir test
   (PlanningApp.Test, repository'ler Moq ile mock'lanarak, zaman için
   `FakeTimeProvider`).
+- Query handler'ları için: `userId`'nin repository çağrısına `ICurrentUserService`'ten
+  geçirildiği, sıralamanın ve DTO eşlemesinin doğru olduğu test edilir. Başka
+  kullanıcının verisinin dönmemesi Persistence integration testinde doğrulanır.
