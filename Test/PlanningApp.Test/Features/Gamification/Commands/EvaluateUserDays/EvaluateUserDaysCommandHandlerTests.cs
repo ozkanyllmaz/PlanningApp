@@ -150,6 +150,31 @@ public class EvaluateUserDaysCommandHandlerTests
         fixture.UnitOfWork.Verify(unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task Handle_WithStreakThatWasNeverEvaluated_StartsFromRegistrationDayWithoutAddingStreak()
+    {
+        // Arrange: kayıt var ama LastEvaluatedDate null (ör. yalnızca freeze verilmiş)
+        var streak = Streak.Create(Guid.NewGuid(), UserId);
+        streak.GrantFreeze(1);
+        var fixture = CreateFixture(new DateTimeOffset(2026, 1, 5, 10, 0, 0, TimeSpan.Zero), streak: streak);
+
+        // Act
+        var result = await fixture.Handler.Handle(new EvaluateUserDaysCommand(UserId), CancellationToken.None);
+
+        // Assert: başlangıç profilin kayıt günü (yerel 2026-01-03), mevcut streak kullanılır
+        fixture.TaskRepository.Verify(
+            repository => repository.GetByDateRangeAsync(
+                UserId, new DateOnly(2026, 1, 3), new DateOnly(2026, 1, 4), It.IsAny<CancellationToken>()),
+            Times.Once);
+        fixture.StreakRepository.Verify(
+            repository => repository.AddAsync(It.IsAny<Streak>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        result.EvaluatedDayCount.Should().Be(2);
+        streak.LastEvaluatedDate.Should().Be(new DateOnly(2026, 1, 4));
+        streak.AvailableFreezes.Should().Be(1); // boş günler freeze harcamaz
+        fixture.UnitOfWork.Verify(unitOfWork => unitOfWork.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     // ---- Seri kuralları ----
 
     [Fact]
