@@ -2,3 +2,8 @@
 [Oo]bj/
 packages/
 .vs/
+
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
