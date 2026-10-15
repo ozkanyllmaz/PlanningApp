@@ -11,7 +11,8 @@
   token'ının SHA-256 özeti. `JwtOptions` (`Jwt` bölümü: Issuer, Audience, SigningKey,
   AccessTokenMinutes = 15, RefreshTokenDays = 60) `ValidateOnStart` ile doğrulanır; SigningKey base64
   çözülmüş en az 32 bayt olmalıdır, aksi halde uygulama BAŞLAMAZ. Anahtar kodda/appsettings'te YOK.
-  Rastgelelik `RandomNumberGenerator` ile üretilir (`System.Random` YASAK). Zaman `TimeProvider`'dan.
+  Rastgelelik `RandomNumberGenerator` ile üretilir (`System.Random` YASAK). Zaman, `ITokenService` metotlarına `issuedAt` parametresiyle gelir (servis `TimeProvider`
+  almaz; zamanı çağıran handler belirler).
   Bu servis veritabanına dokunmaz. `AddInfrastructure(IConfiguration)` DI kaydını yapar.
 
 ## Yasaklar
