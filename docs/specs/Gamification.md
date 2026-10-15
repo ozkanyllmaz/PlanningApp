@@ -88,6 +88,6 @@
   (bkz. Tasks/TaskPriority.cs)
 - Application: `EvaluateUserDaysCommand` (Features/Gamification/) ve
   `WeightedCompletion` (Common/Helpers/) yazıldı
-- Persistence: (henüz yok)
+- Persistence: yazıldı (PlanningDbContext, konfigürasyonlar, repository'ler, migration'lar)
 - Infrastructure: Günlük değerlendirmeyi tetikleyen Hosted Service (henüz yok)
 - WebApi: (henüz yok)

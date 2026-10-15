@@ -95,7 +95,7 @@
   `TaskPriority` ve `FocusColor` (Tasks/)
 - Application: tüm görev Command'ları ve Query'leri yazıldı (GetDailyPlan altın
   örnek, GetPool, GetWeeklyPlan); gün değerlendirmesi henüz yok
-- Persistence: (henüz yok)
+- Persistence: yazıldı (PlanningDbContext, konfigürasyonlar, repository'ler, migration'lar)
 - WebApi: (henüz yok)
 
 ## Command Kataloğu (Application)

@@ -22,3 +22,4 @@
 - [ ] Refresh token süresi ve iptal (logout) stratejisi.
 - [ ] Saat dilimi nasıl alınacak (cihazdan otomatik, kullanıcı değiştirebilir mi)?
 - [ ] Linux/Docker üzerinde saat dilimi veritabanı (tzdata) ve ICU kurulu olmalı; yoksa IANA kimlikleri çözülemez.
+- [ ] `IUserProfileRepository`'ye `AddAsync` eklenecek (kayıt akışında profil oluşturma).

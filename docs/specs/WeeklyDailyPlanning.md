@@ -53,5 +53,5 @@
 ## İlgili Katmanlar
 - Domain: `PlanningWeek` entity (bkz. Weeks/PlanningWeek.cs)
 - Application: (henüz yazılmadı — yukarıdaki TODO'lara bağlı)
-- Persistence: (henüz yok)
+- Persistence: yazıldı (PlanningDbContext, konfigürasyonlar, repository'ler, migration'lar)
 - WebApi: (henüz yok)
