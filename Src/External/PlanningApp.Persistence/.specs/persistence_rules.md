@@ -51,6 +51,10 @@
   `DbUpdateConcurrencyException` yükselir; Application bunu yakalamaz. İstisnanın
   HTTP karşılığı (5xx, istemci ve arka plan servisi yeniden dener) WebApi
   aşamasında netleşir.
+- `Streak`'in `xmin` eşlemesi `IsRowVersion()` ile yapılır. Üretilen migration
+  C# dosyasında `xmin` kolon satırı görünür; bu NORMALDİR: Npgsql sistem
+  kolonunu SQL'e eklemeden atlar. Bu satır elle silinmez, `xmin` için
+  `HasColumnType("xid")` gibi elle kolon eşlemesi YAPILMAZ.
 
 ## Index'ler ve Benzersizlik
 - `planning_tasks`: (user_id, assigned_date) index'i, `is_deleted = false`

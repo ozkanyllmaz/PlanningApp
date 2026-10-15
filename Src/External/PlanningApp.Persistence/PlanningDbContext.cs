@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using PlanningApp.Application.Common.Interfaces;
+using PlanningApp.Domain.Gamification;
 using PlanningApp.Domain.Tasks;
+using PlanningApp.Domain.Users;
+using PlanningApp.Domain.Weeks;
 using PlanningApp.Persistence.Conventions;
 
 namespace PlanningApp.Persistence;
@@ -11,6 +14,9 @@ public sealed class PlanningDbContext(DbContextOptions<PlanningDbContext> option
     : DbContext(options), IUnitOfWork
 {
     public DbSet<PlanningTask> PlanningTasks => Set<PlanningTask>();
+    public DbSet<PlanningWeek> PlanningWeeks => Set<PlanningWeek>();
+    public DbSet<Streak> Streaks => Set<Streak>();
+    public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

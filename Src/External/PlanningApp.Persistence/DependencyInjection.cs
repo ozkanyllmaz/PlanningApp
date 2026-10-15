@@ -23,6 +23,9 @@ public static class DependencyInjection
         // Aynı scope içinde handler ve repository aynı DbContext örneğini paylaşır
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<PlanningDbContext>());
         services.AddScoped<IPlanningTaskRepository, PlanningTaskRepository>();
+        services.AddScoped<IPlanningWeekRepository, PlanningWeekRepository>();
+        services.AddScoped<IStreakRepository, StreakRepository>();
+        services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 
         return services;
     }
