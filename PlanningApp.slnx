@@ -12,6 +12,7 @@
     <Project Path="Src/External/PlanningApp.Persistence/PlanningApp.Persistence.csproj" />
   </Folder>
   <Folder Name="/Test/">
+    <Project Path="Test/PlanningApp.IntegrationTests/PlanningApp.IntegrationTests.csproj" />
     <Project Path="Test/PlanningApp.Test/PlanningApp.Test.csproj" Id="f7231893-d994-4f03-9e5e-e1f1dd7910fd" />
   </Folder>
   <Project Path="PlanningApp.WebApi/PlanningApp.WebApi.csproj" />
