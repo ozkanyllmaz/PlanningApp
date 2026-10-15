@@ -115,3 +115,10 @@
 - `refresh_tokens`: `token_hash` UNIQUE, `user_id` index. `RefreshTokenRepository.GetByHashAsync` takiplidir.
 - Yabancı anahtar (FK) şimdilik YOKTUR: mevcut testler gerçek kullanıcı olmadan kayıt ekler.
   TODO: kullanıcı FK'leri, testler gerçek kullanıcıyla güncellenince eklenecek.
+- `refresh_tokens`, `Streak` gibi `xmin` ile iyimser eşzamanlılık kullanır (`IsRowVersion()`):
+  aynı token ile eşzamanlı iki yenileme isteğinden yalnızca biri başarılı olur, ikincisi
+  `DbUpdateConcurrencyException` alır. Application bunu yakalamaz.
+- `refresh_tokens.token_hash` en fazla 128 karakterdir (küçük harfli hex, 64 karakter).
+- Identity'nin tanımadığımız hata kodları `General` alanına, Identity'nin kendi açıklamasıyla
+  eşlenir (sessizce yutulmaz). `General`, kimlik doğrulama sonuçlarında `Email`/`Password` dışında
+  kalan hataları taşır.

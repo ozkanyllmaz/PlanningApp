@@ -20,10 +20,10 @@
 - Access token: JWT (HS256), 15 dk. Claim'ler: `sub` (UserId), `email`, `jti`, `iat`, `exp`. Rol veya
   başka yetki claim'i yok.
 - Refresh token: 32 bayt kriptografik rastgele, base64url. Veritabanında SADECE SHA-256 özeti
-  saklanır; düz token yalnızca üretildiği yanıtta bulunur, hiçbir yerde loglanmaz. Ömür 60 gün.
+  saklanır; düz token yalnızca üretildiği yanıtta bulunur, hiçbir yerde loglanmaz. Ömür 60 gün. Özet, SHA-256'nın küçük harfli onaltılık (hex) gösterimidir (64 karakter).
 - Yenileme (rotation): refresh token kullanılınca eskisi iptal edilir (`ReplacedByTokenId`), yenisi
   verilir. İptal edilmiş, süresi dolmuş veya bilinmeyen token → `AuthenticationFailedException`
-  (istemci giriş ister). Yeniden kullanım tespiti (oturum ailesinin iptali) v1'de YOK.
+  (istemci giriş ister). Yeniden kullanım tespiti (oturum ailesinin iptali) v1'de YOK. Aynı token ile eşzamanlı iki yenileme isteğinden biri DbUpdateConcurrencyException ile reddedilir (5xx); istemci tekrar dener ve iptal edilmiş token ile 401 alır.
 - Çıkış: refresh token iptal edilir; token yoksa veya zaten iptalse hata verilmez (idempotent,
   bilgi sızdırılmaz).
 - İmzalama anahtarı ve süreler `Jwt` yapılandırma bölümünden gelir. Anahtar kodda/appsettings'te

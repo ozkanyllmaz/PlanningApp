@@ -7,4 +7,7 @@ public interface IUserProfileRepository
 {
     // UserProfile.Id, kimlik kullanıcı Id'si ile aynıdır; kayıt yoksa null döner
     Task<UserProfile?> GetByIdAsync(Guid userId, CancellationToken cancellationToken);
+
+    // Kayıt (Register) sırasında yeni profili ekler
+    Task AddAsync(UserProfile profile, CancellationToken cancellationToken);
 }
