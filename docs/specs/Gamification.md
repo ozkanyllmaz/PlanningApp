@@ -75,10 +75,10 @@
   değerlendirme tetiklenirken karar verilecek.
 - [ ] Maskot tepkileri (hangi eyleme hangi tepki), günlük özlü sözlerin kaynağı.
 - [ ] Zamanlı akıllı bildirimlerin kuralları (Infrastructure'a geçerken).
-- [ ] `Streak` için eşzamanlılık: aynı kullanıcı için iki değerlendirme aynı
+- [x] `Streak` için eşzamanlılık: aynı kullanıcı için iki değerlendirme aynı
   anda çalışırsa (iki sunucu örneği, üst üste binen zamanlayıcı) çakışma olur.
   Persistence'ta Streak'e satır sürümü (optimistic concurrency token) eklenecek;
-  çakışmada işlem atlanır, bir sonraki turda tekrar denenir.
+  çakışmada işlem atlanır, bir sonraki turda tekrar denenir. Çözüm: persistence_rules.md → Eşzamanlılık
 - [ ] Gün sonucu (başarılı/başarısız/dondurulmuş) özet bildiriminde gerekirse
   `Streak.EvaluateDay` bir sonuç tipi dönmeli (Domain değişikliği, bildirim
   tasarımıyla birlikte karar verilecek).

@@ -41,6 +41,16 @@
   (`TaskPriority` ve `FocusColor` değerleri sabittir, değiştirilmez).
   `decimal CompletionPercentage` → `numeric(5,2)`. `Title` en fazla 200,
   `TimeZoneId` en fazla 64 karakter.
+- EF Core paketleri (`Microsoft.EntityFrameworkCore`, `.Relational`, `.Design`,
+  Npgsql sağlayıcısı) birlikte ve uyumlu sürümlerde güncellenir. `Design`
+  paketi `PrivateAssets=all` olduğundan, sürüm uyumsuzluğu (CS1705) çıkmaması
+  için Persistence.csproj'da `Microsoft.EntityFrameworkCore` ve `.Relational`
+  sürümleri açıkça sabitlenir.
+- Eşzamanlılık: `Streak`, PostgreSQL `xmin` sistem kolonunu iyimser eşzamanlılık
+  belirteci olarak kullanır (shadow property, Domain'de alan YOK). Çakışmada
+  `DbUpdateConcurrencyException` yükselir; Application bunu yakalamaz. İstisnanın
+  HTTP karşılığı (5xx, istemci ve arka plan servisi yeniden dener) WebApi
+  aşamasında netleşir.
 
 ## Index'ler ve Benzersizlik
 - `planning_tasks`: (user_id, assigned_date) index'i, `is_deleted = false`
