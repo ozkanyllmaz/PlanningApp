@@ -23,3 +23,5 @@
   gerekmeyebilir, gözden geçirilecek.
 - [ ] Komutların cihazlar arası sırası (`occurredAt` kullanılacak mı?).
 - [ ] Mezar taşı temizleme süresi.
+- [ ] Persistence'a senkron alanları (güncellenme zamanı, sürüm numarası) şimdilik
+  eklenmedi; pull imleci kararıyla birlikte yeni bir migration ile eklenecek.

@@ -9,6 +9,7 @@ Bağımlılık yönü: WebApi → (Persistence + Infrastructure) → Application
 - Src/External/PlanningApp.Infrastructure (SADECE dış servisler: hosted service, bildirim, 3.parti)
 - PlanningApp.WebApi
 - Test/PlanningApp.Test
+- Test/PlanningApp.IntegrationTests
 
 ## MUTLAK KURAL — Katman Sınırı
 Bulunduğun projenin .specs/ klasöründeki dosyayı oku ve SADECE onu uygula.
@@ -43,6 +44,18 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
 - "Altın örnek" olarak işaretlenen dosyalara istenmedikçe dokunma.
 - Bitirmeden `dotnet build` ve `dotnet test` çalıştır.
 
+## Gizli Bilgiler (Secrets)
+- Gerçek şifre, API anahtarı, JWT imzalama anahtarı ve bağlantı dizesi şifreleri
+  kod, `appsettings*.json`, spec, test, commit mesajı veya prompt içine YAZILMAZ.
+- Gizli değerler yalnızca `IConfiguration` üzerinden okunur; değer eksikse
+  uygulama başlangıçta hata verir, varsayılan şifre YOKTUR.
+- Yerelde `dotnet user-secrets`, üretimde ortam değişkenleri veya barındırma
+  ortamının gizli deposu kullanılır. `.env` yalnızca Docker Compose içindir,
+  repoya GİRMEZ; repoda sahte değerli `.env.example` bulunur.
+- Claude Code `.env`, `secrets.json` ve benzeri dosyaları OKUMAZ, gerekirse
+  yer tutucu değer kullanır.
+- Test ve design-time bağlantı bilgileri sahte/yer tutucudur.
+
 ## Test Kütüphaneleri ve Katmanlaşma
 - Unit testler: `Test/PlanningApp.Test`
   - Referanslar: SADECE PlanningApp.Domain, PlanningApp.Application
@@ -60,6 +73,7 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
   happy-path ve bir validation-failure senaryosu; Persistence/Infrastructure'a
   dokunan her yeni repository/hosted-service davranışı için
   IntegrationTests projesinde karşılığı yazılması beklenir.
+- Entegrasyon testlerini çalıştırmak için Docker (Docker Desktop) açık olmalıdır.
 
 ## Spec Dosyası Türleri ve Nerede Aranır
 1. **Katman spec'i** (`{Proje}/.specs/*.md`) — HER ZAMAN önce okunur.
