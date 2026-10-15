@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningApp.Application.Common.Interfaces;
 using PlanningApp.Application.Common.Interfaces.Repositories;
+using PlanningApp.Persistence.Identity;
 using PlanningApp.Persistence.Repositories;
 
 namespace PlanningApp.Persistence;
@@ -26,6 +27,27 @@ public static class DependencyInjection
         services.AddScoped<IPlanningWeekRepository, PlanningWeekRepository>();
         services.AddScoped<IStreakRepository, StreakRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        // Identity seçenekleri tek kaynaktır (bkz. Authentication.md): rolsüz, yalnızca kullanıcı deposu
+        services
+            .AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+
+                options.Password.RequiredLength = 8;
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+            })
+            .AddEntityFrameworkStores<PlanningDbContext>();
+
+        services.AddScoped<IIdentityService, IdentityService>();
 
         return services;
     }

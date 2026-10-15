@@ -1,28 +1,35 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using PlanningApp.Application.Common.Interfaces;
+using PlanningApp.Domain.Auth;
 using PlanningApp.Domain.Gamification;
 using PlanningApp.Domain.Tasks;
 using PlanningApp.Domain.Users;
 using PlanningApp.Domain.Weeks;
 using PlanningApp.Persistence.Conventions;
+using PlanningApp.Persistence.Identity;
 
 namespace PlanningApp.Persistence;
 
-// IUnitOfWork'ü uygular: SaveChangesAsync, DbContext'in kendi metodudur
+// Rolsüz Identity bağlamından türer; IUnitOfWork'ü uygular (SaveChangesAsync DbContext'in kendi metodudur)
 public sealed class PlanningDbContext(DbContextOptions<PlanningDbContext> options)
-    : DbContext(options), IUnitOfWork
+    : IdentityUserContext<ApplicationUser, Guid>(options), IUnitOfWork
 {
     public DbSet<PlanningTask> PlanningTasks => Set<PlanningTask>();
     public DbSet<PlanningWeek> PlanningWeeks => Set<PlanningWeek>();
     public DbSet<Streak> Streaks => Set<Streak>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Önce Identity şeması kurulur, sonra bizim konfigürasyonlar tablo adlarını ezer
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PlanningDbContext).Assembly);
 
-        // Kolon, anahtar ve index adları snake_case'e çevrilir (tablo adları konfigürasyonlarda açıkça yazılır)
+        // Kolon, anahtar, index ve FK adları snake_case'e çevrilir (tablo adları konfigürasyonlarda açıkça yazılır)
         ApplySnakeCaseNames(modelBuilder);
     }
 
@@ -45,6 +52,9 @@ public sealed class PlanningDbContext(DbContextOptions<PlanningDbContext> option
 
             foreach (var index in entityType.GetIndexes())
                 index.SetDatabaseName(SnakeCase.Convert(index.GetDatabaseName() ?? string.Empty));
+
+            foreach (var foreignKey in entityType.GetForeignKeys())
+                foreignKey.SetConstraintName(SnakeCase.Convert(foreignKey.GetConstraintName() ?? string.Empty));
         }
     }
 }
