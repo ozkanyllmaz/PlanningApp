@@ -27,9 +27,10 @@
   - `DomainException` (Domain) → 422
   - Beklenmeyen hata → 500, iç ayrıntı (stack trace, mesaj) istemciye VERİLMEZ,
     sadece sunucuda loglanır
-- İstemci davranışı: 4xx kalıcı reddir (istemci işlemi kuyruktan atar),
-  5xx ve ağ hataları geçicidir (tekrar denenir). Bu ayrım korunmalıdır
-  (bkz. docs/specs/OfflineSync.md). Bu yüzden bir kural/doğrulama hatası
+  - AuthenticationFailedException (Application) → 401
+- İstemci davranışı (bkz. docs/specs/OfflineSync.md): 400, 404, 409, 422 kalıcı reddir (işlem
+  kuyruktan atılır); 401 yetkisizliktir, kalıcı ret DEĞİLDİR (access token yenilenip tekrar denenir);
+  408, 429, 5xx ve ağ hataları geçicidir (tekrar denenir). Bir kural/doğrulama hatası asla 5xx döndürülmez. Bu yüzden bir kural/doğrulama hatası
   asla 5xx döndürülmez.
 
 ## Yasaklar

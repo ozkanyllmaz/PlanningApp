@@ -98,3 +98,20 @@
   (private constructor ile yeniden oluşturma dahil). +03:00 offset'li bir
   `DateTimeOffset` aynı anı (instant) korur.
 - Benzersizlik index'leri ihlalde hata verir.
+
+## Kimlik (Identity)
+- ASP.NET Core Identity SADECE Persistence'tadır: `ApplicationUser : IdentityUser<Guid>`
+  (`Identity/`). `PlanningDbContext`, rolsüz `IdentityUserContext<ApplicationUser, Guid>`'den türer
+  ve `OnModelCreating` içinde ÖNCE `base.OnModelCreating` çağrılır, sonra konfigürasyonlar ve
+  snake_case adlandırma uygulanır. Domain ve Application'a Identity tipi sızmaz.
+- Identity tabloları `identity_` önekli snake_case'tir (`identity_users`, `identity_user_claims`,
+  `identity_user_logins`, `identity_user_tokens`).
+- Identity seçenekleri `AddIdentityCore` ile verilir: e-posta benzersiz, parola en az 8 karakter ve
+  karmaşıklık zorunluluğu yok, kilitleme 5 deneme/15 dk. Tek kaynak burasıdır (bkz. Authentication.md).
+- `IdentityService` (`IIdentityService`) `UserManager` kullanır; `SignInManager` KULLANILMAZ (HTTP
+  bağımlılığı). `UserManager` işlemleri kendi `SaveChanges`'ini çağırır; "repository SaveChanges
+  çağırmaz" kuralının TEK istisnası budur ve yalnızca `IdentityService` içindedir (bu yüzden
+  Application kayıtta telafi uygular).
+- `refresh_tokens`: `token_hash` UNIQUE, `user_id` index. `RefreshTokenRepository.GetByHashAsync` takiplidir.
+- Yabancı anahtar (FK) şimdilik YOKTUR: mevcut testler gerçek kullanıcı olmadan kayıt ekler.
+  TODO: kullanıcı FK'leri, testler gerçek kullanıcıyla güncellenince eklenecek.

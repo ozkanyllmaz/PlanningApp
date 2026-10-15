@@ -63,6 +63,11 @@ yerel bugünden önceyse `ValidationException` (alan adı `Date`/`TargetDate`).
   içinde taşır. Bunlara HİÇBİR HTTP endpoint'i açılmaz; yalnızca
   Infrastructure'daki arka plan servisleri gönderir. Handler
   `ICurrentUserService` kullanmaz.
+- Anonim kimlik Command'ları (`Register`, `Login`, `RefreshAccessToken`, `Logout`) henüz oturum
+  olmadığı için `ICurrentUserService` kullanmaz; "Command Handler Akış Sırası" bölümü bunlara
+  uygulanmaz, akışları Authentication.md'dedir. Parola ve token hiçbir log'a, hata mesajına veya
+  exception'a yazılmaz; bu alanları taşıyan Command record'ları `ToString`'i override edip
+  hassas alanları "***" gösterir.
 
 ## Sorumluluk Sınırı
 - Bu katman `IPlanningTaskRepository`, `IPlanningWeekRepository`,

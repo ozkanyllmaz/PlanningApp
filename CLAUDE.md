@@ -84,7 +84,7 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
    - docs/specs/TaskManagement.md — görev CRUD, sıralama, silme, tamamlama, undo, kopyalama
    - docs/specs/WeeklyDailyPlanning.md — makro/mikro geçiş, sürükle-bırak, hafta oluşturma, tamamlama kısıtı
    - docs/specs/Gamification.md — streak, gün sonu değerlendirmesi, maskot, arşiv
-   - docs/specs/Authentication.md — kayıt/giriş, Google girişi, JWT, saat dilimi (taslak)
+   - docs/specs/Authentication.md — kayıt/giriş, JWT, refresh token (ilk dilim; Google girişi sonra)
    - docs/specs/OfflineSync.md — push/pull senkronizasyonu, çakışma çözümü (taslak)
    - docs/specs/LockScreenQuickAccess.md — kilit ekranı hızlı ekleme (araştırma aşamasında, kesinleşmedi)
    - docs/specs/Notifications.md — maskot bildirimleri (fikir aşaması, kesinleşmedi)

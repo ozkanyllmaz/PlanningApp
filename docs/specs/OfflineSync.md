@@ -10,9 +10,11 @@
 - Çakışma: her Command yalnızca kendi alanlarına dokunur; sunucu her
   Command'ı Domain kurallarına göre doğrular. Aynı alana gelen sonraki
   komut kazanır.
-- Yeniden deneme: ağ hatası ve 5xx tekrar denenir; 4xx (kural/doğrulama
-  reddi) kalıcıdır, istemci işlemi kuyruktan atar, sunucu durumunu çeker
-  ve kullanıcıya bildirir.
+- Yeniden deneme: ağ hatası, 5xx, 408 ve 429 geçicidir, artan bekleme ile tekrar denenir.
+  400, 404, 409, 422 kalıcıdır: istemci işlemi kuyruktan atar, sunucu durumunu çeker ve kullanıcıya
+  bildirir. 401 kalıcı DEĞİLDİR: istemci refresh token ile access token'ı yeniler ve işlemi tekrar
+  dener; yenileme de 401 dönerse kuyruk BEKLEMEYE alınır (işlemler silinmez), kullanıcıdan giriş
+  istenir ve girişten sonra kuyruk kaldığı yerden devam eder.
 - Bir görev silindikten sonra gelen (gecikmeli) güncelleme istekleri 404 döner;
   istemci bunu kalıcı ret sayıp kuyruktan atar ve kullanıcıya hata göstermez.
 
