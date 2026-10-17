@@ -36,7 +36,7 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options) : ITokenServic
             IssuedAt = issuedAt.UtcDateTime,
             Expires = expiresAt.UtcDateTime,
             SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Convert.FromBase64String(_options.SigningKey)),
+                JwtSigningKeyResolver.Resolve(_options),
                 SecurityAlgorithms.HmacSha256)
         };
 
