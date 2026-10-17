@@ -65,6 +65,15 @@ Parola ve token alanı taşıyan Command record'ları `ToString`'i override eder
 | RefreshAccessToken | RefreshToken | Hash'le; `GetByHashAsync`; yoksa veya aktif değilse `AuthenticationFailedException`; `FindByIdAsync` (yoksa aynı hata); eskiyi iptal et (ReplacedByTokenId = yeni Id), yenisini ekle, TEK `SaveChanges`; access token üret |
 | Logout | RefreshToken | Hash'le; token yoksa veya zaten iptalse hiçbir şey yapmadan dön; değilse iptal et, `SaveChanges` |
 
+- Register telafisi: kullanıcı oluştuktan sonraki TÜM adımlar (profil ve token oluşturma,
+  ekleme, `SaveChanges`) tek bir try bloğundadır; herhangi biri hata verirse `DeleteUserAsync`
+  çağrılır (iptal belirteci OLMADAN) ve ilk hata yeniden fırlatılır. Telafinin kendisi hata
+  verirse ilk hata MASKELENMEZ (telafi hatası yutulur).
+- Login validator: e-posta boş olamaz, biçimi geçerli ve en çok 256 karakter; parola boş olamaz
+  ve en çok 128 karakter.
+- Hassas alan taşıyan sonuç tipleri (`AuthResult`, `AccessTokenResult`, `RefreshTokenMaterial`)
+  `ToString`'de token alanlarını "***" gösterir.
+
 ## Henüz Kararlaştırılmadı (TODO)
 - [ ] Google girişi (ikinci dilim): Google Cloud projesi, OAuth istemci kimliği, sunucu tarafı
   kimlik token'ı doğrulama.

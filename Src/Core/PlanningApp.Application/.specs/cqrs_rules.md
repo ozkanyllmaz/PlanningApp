@@ -11,6 +11,7 @@
   `CreateTaskCommand.cs`, `CreateTaskCommandHandler.cs`,
   `CreateTaskCommandValidator.cs`. Query'ler için `Features/Tasks/Queries/GetWeeklyPlan/` gibi (hafta kaydının kendisini ilgilendiren sorgular, örn. arşiv, `Features/Weeks/Queries/` altındadır). Ortak altyapı
   (`Behaviors/`, `Exceptions/`) `Common/` altındadır.
+  Paylaşılan sonuç tipleri Common/Models/ altındadır; bir feature'a özgü olanlar (örn. AuthResult) kendi feature klasörünün kökündedir.
 - İsimlendirme: `CreateTaskCommand`, `AssignTaskToDateCommand`,
   `CompleteTaskCommand`, `UndoTaskCompletionCommand`, `RenameTaskCommand`,
   `GetWeeklyPlanQuery`, `GetDailyPlanQuery`, `GetArchivedWeeksQuery`.
@@ -22,6 +23,7 @@
   DTO'lar kendi feature klasöründe `Dtos/` altında, Query'ye özel olanlar
   Query klasörünün içindedir. Ayrıntılar: docs/specs/TaskManagement.md → Query Kataloğu.
   Altın örnek: `GetDailyPlanQueryHandler`.
+
 
 ## Command Handler Akış Sırası
 Var olan bir kaydı değiştiren Command handler'ları şu sırayı izler

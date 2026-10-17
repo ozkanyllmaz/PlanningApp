@@ -122,3 +122,7 @@
 - Identity'nin tanımadığımız hata kodları `General` alanına, Identity'nin kendi açıklamasıyla
   eşlenir (sessizce yutulmaz). `General`, kimlik doğrulama sonuçlarında `Email`/`Password` dışında
   kalan hataları taşır.
+- `IdentityService.DeleteUserAsync` silmeden ÖNCE `ChangeTracker.Clear()` çağırır: Register
+  telafisi, başarısız bir `SaveChanges`'ten sonra çalışır ve bağlamda bekleyen (Added)
+  entity'ler kalmıştır; temizlenmezse silme işlemi onları yeniden kaydetmeye çalışır ve aynı
+  hatayla başarısız olur (kullanıcı silinmez).
