@@ -74,6 +74,18 @@ Parola ve token alanı taşıyan Command record'ları `ToString`'i override eder
 - Hassas alan taşıyan sonuç tipleri (`AuthResult`, `AccessTokenResult`, `RefreshTokenMaterial`)
   `ToString`'de token alanlarını "***" gösterir.
 
+### HTTP uçları (Features/Auth, WebApi/Controllers/AuthController)
+| Yöntem ve yol | Anonim | Command/Query | Yanıt |
+|---|---|---|---|
+| POST /api/v1/auth/register | evet | RegisterCommand | 201 + AuthResult |
+| POST /api/v1/auth/login | evet | LoginCommand | 200 + AuthResult |
+| POST /api/v1/auth/refresh | evet | RefreshAccessTokenCommand | 200 + AuthResult |
+| POST /api/v1/auth/logout | evet | LogoutCommand | 204 |
+| GET /api/v1/auth/me | hayır | GetCurrentUserQuery | 200 + CurrentUserDto(UserId, Email) |
+
+- `GetCurrentUserQuery`: `ICurrentUserService.UserId` ile `IIdentityService.FindByIdAsync`; kullanıcı yoksa (token geçerli ama kullanıcı silinmiş) `AuthenticationFailedException` → 401.
+- Anonim uçlar hız sınırına tabidir (bkz. controller_rules.md).
+
 ## Henüz Kararlaştırılmadı (TODO)
 - [ ] Google girişi (ikinci dilim): Google Cloud projesi, OAuth istemci kimliği, sunucu tarafı
   kimlik token'ı doğrulama.
@@ -83,7 +95,7 @@ Parola ve token alanı taşıyan Command record'ları `ToString`'i override eder
 - [ ] Kayıtta e-posta çakışması hesabın varlığını sızdırır (hesap numaralandırma); e-posta
   doğrulama gelince yeniden değerlendirilecek.
 - [ ] Giriş denemelerinde zamanlama farkı (bilinmeyen e-postada parola karması hesaplanmıyor).
-- [ ] Kimlik uçlarında hız sınırlama (ASP.NET Core rate limiting), WebApi dilimi.
+- [x] Kimlik uçlarında hız sınırlama (ASP.NET Core rate limiting), WebApi dilimi.
 - [ ] Hesap silme ve kişisel veri dışa aktarma (KVKK), yayına çıkmadan önce.
 - [ ] iOS'ta Google ile giriş sunulursa Apple'ın "Apple ile giriş" kuralı (araştırılacak).
 - [ ] JWT imzalama anahtarı döndürme (rotation) ve anahtar kimliği (`kid`).

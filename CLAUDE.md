@@ -10,6 +10,7 @@ Bağımlılık yönü: WebApi → (Persistence + Infrastructure) → Application
 - PlanningApp.WebApi
 - Test/PlanningApp.Test
 - Test/PlanningApp.IntegrationTests
+- Test/PlanningApp.ApiTests
 
 ## MUTLAK KURAL — Katman Sınırı
 Bulunduğun projenin .specs/ klasöründeki dosyayı oku ve SADECE onu uygula.
@@ -55,6 +56,7 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
 - Claude Code `.env`, `secrets.json` ve benzeri dosyaları OKUMAZ, gerekirse
   yer tutucu değer kullanır.
 - Test ve design-time bağlantı bilgileri sahte/yer tutucudur.
+- .claude/settings.jsoniçindeki permissions.deny kuralları.env dosyalarının okunmasını ve düzenlenmesini engeller; bu bir azaltımdır, garanti değildir. Bu makinedeki gizliler yalnızca yerel geliştirme içindir.
 
 ## Test Kütüphaneleri ve Katmanlaşma
 - Unit testler: `Test/PlanningApp.Test`
@@ -74,6 +76,8 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
   dokunan her yeni repository/hosted-service davranışı için
   IntegrationTests projesinde karşılığı yazılması beklenir.
 - Entegrasyon testlerini çalıştırmak için Docker (Docker Desktop) açık olmalıdır.
+- API testleri: `Test/PlanningApp.ApiTests`. WebApi'ye referans verir, gerçek HTTP (WebApplicationFactory)
+  ve gerçek PostgreSQL (Testcontainers) kullanır. IntegrationTests'e WebApi referansı EKLENMEZ.
 
 ## Spec Dosyası Türleri ve Nerede Aranır
 1. **Katman spec'i** (`{Proje}/.specs/*.md`) — HER ZAMAN önce okunur.
