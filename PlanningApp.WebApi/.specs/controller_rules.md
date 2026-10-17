@@ -28,6 +28,9 @@
   yetkili istek ulaşır).
 - CORS: mobil istemci gerektirmez, web istemcisi (v2.0) gelince eklenir. HTTPS yönlendirme uygulama
   içinde YOK; TLS barındırma ortamında (ters vekil) sonlanır.
+- Varsayılan politika eşleşen ucu olmayan isteklere de uygulanır: anonim istek bilinmeyen bir yola
+  404 değil 401 alır (rota varlığı sızmaz); kimliği doğrulanmış istek 404 alır.
+- Development'ta OpenAPI belge ucu `AllowAnonymous` ile açılır (yalnızca Development).
 
 ## Hata Yanıt Formatı
 - `IExceptionHandler` + `AddProblemDetails` + `UseStatusCodePages`: tüm hata yanıtları
@@ -44,6 +47,9 @@
   yazılmaz. Beklenmeyen hatalar Error düzeyinde loglanır. İstek ve yanıt gövdeleri LOGLANMAZ
   (parola ve token içerir).
 - Bozuk JSON gövdesi 400'dür. İstemcinin hata sınıflandırması: docs/specs/OfflineSync.md.
+- `BadHttpRequestException` kendi durum koduyla (400, 413 vb.) ve genel bir mesajla döner (500'e
+  dönüşmez). Problem yanıtlarında framework'ün eklediği `traceId` (korelasyon kimliği) bulunur;
+  hassas değildir ve yanıt karşılaştırmalarında yok sayılır.
 
 ## Hız Sınırlama
 - Yerleşik rate limiter. "auth" politikası: IP başına sabit pencere (1 dk), limit
