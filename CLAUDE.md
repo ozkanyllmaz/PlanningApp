@@ -56,7 +56,14 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
 - Claude Code `.env`, `secrets.json` ve benzeri dosyaları OKUMAZ, gerekirse
   yer tutucu değer kullanır.
 - Test ve design-time bağlantı bilgileri sahte/yer tutucudur.
-- .claude/settings.jsoniçindeki permissions.deny kuralları.env dosyalarının okunmasını ve düzenlenmesini engeller; bu bir azaltımdır, garanti değildir. Bu makinedeki gizliler yalnızca yerel geliştirme içindir.
+- .claude/settings.json içindeki permissions.deny kuralları.env dosyalarının okunmasını ve düzenlenmesini engeller; bu bir azaltımdır, garanti değildir. Bu makinedeki gizliler yalnızca yerel geliştirme içindir.
+- Bir gizli değere atıf gerekiyorsa (açıklama, test, dokümantasyon, hata mesajı, log) değer ASLA
+  yazılmaz; yer tutucu (`***` veya `<gizli>`) kullanılır. Gizli değer taşıyan nesnelerin `ToString`'i
+  bu alanları maskeler.
+- Yapılandırma değerleri (bağlantı dizesi, anahtar) log'a yazılmaz; EF Core hassas veri günlüğü
+  (`EnableSensitiveDataLogging`) AÇILMAZ.
+- Gizli değer gösteren komutlar (`dotnet user-secrets list`, `docker inspect`, `docker compose config`,
+  `env`) çalıştırılmaz; gerekirse yalnızca anahtar adları gösterilir.
 
 ## Test Kütüphaneleri ve Katmanlaşma
 - Unit testler: `Test/PlanningApp.Test`
