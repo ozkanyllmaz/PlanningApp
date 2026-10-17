@@ -53,10 +53,14 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
 - Yerelde `dotnet user-secrets`, üretimde ortam değişkenleri veya barındırma
   ortamının gizli deposu kullanılır. `.env` yalnızca Docker Compose içindir,
   repoya GİRMEZ; repoda sahte değerli `.env.example` bulunur.
-- Claude Code `.env`, `secrets.json` ve benzeri dosyaları OKUMAZ, gerekirse
+- Bu makinedeki gizliler (`.env`, `user-secrets`) yalnızca yerel geliştirme içindir ve değersizdir.
+  Üretim gizlileri bu makineye ve Claude Code'un erişimine HİÇ girmez; geliştirme JWT anahtarı
+  üretimde KULLANILMAZ.
+- Claude Code `.env`, `secrets.json` (user-secrets deposu) ve benzeri dosyaları OKUMAZ, gerekirse
   yer tutucu değer kullanır.
-- Test ve design-time bağlantı bilgileri sahte/yer tutucudur.
-- .claude/settings.json içindeki permissions.deny kuralları.env dosyalarının okunmasını ve düzenlenmesini engeller; bu bir azaltımdır, garanti değildir. Bu makinedeki gizliler yalnızca yerel geliştirme içindir.
+- `.claude/settings.json` içindeki permissions.deny kuralları bu dosyaların okunmasını ve
+  düzenlenmesini engellemek için konmuştur; HENÜZ SINANMADI ve tam kilit değildir. Asıl koruma bu
+  talimat ve bu makinedeki gizlilerin yalnızca yerel, değersiz değerler olmasıdır.
 - Bir gizli değere atıf gerekiyorsa (açıklama, test, dokümantasyon, hata mesajı, log) değer ASLA
   yazılmaz; yer tutucu (`***` veya `<gizli>`) kullanılır. Gizli değer taşıyan nesnelerin `ToString`'i
   bu alanları maskeler.
@@ -64,6 +68,7 @@ Infrastructure'a, arkaplan/bildirim kodu asla Persistence'a yazılmaz.
   (`EnableSensitiveDataLogging`) AÇILMAZ.
 - Gizli değer gösteren komutlar (`dotnet user-secrets list`, `docker inspect`, `docker compose config`,
   `env`) çalıştırılmaz; gerekirse yalnızca anahtar adları gösterilir.
+- Test ve design-time bağlantı bilgileri sahte/yer tutucudur.
 
 ## Test Kütüphaneleri ve Katmanlaşma
 - Unit testler: `Test/PlanningApp.Test`
